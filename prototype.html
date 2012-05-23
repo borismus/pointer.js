@@ -1,0 +1,61 @@
+<!doctype html>
+<head>
+  <meta name="viewport" content="width=device-width">
+</head>
+
+<style>
+  #test {
+    background: green;
+    width: 480px;
+    height: 480px;
+    margin: 0 auto;
+    overflow: hidden;
+    color: white;
+  }
+
+  body {
+    overflow: hidden;
+  }
+</style>
+
+<div id="test">
+</div>
+
+<!-- Pointer events library. -->
+<script src="pointer.js"></script>
+<script src="doubletap.js"></script>
+<script src="longpress.js"></script>
+<script src="scale.js"></script>
+<script>
+
+  var test = document.querySelector('#test');
+  test.addEventListener('pointerdown', function(e) {
+    log('pointerdown, pointerType: ' + e.pointerType);
+  });
+  test.addEventListener('pointermove', function(e) {
+    log('pointermove, pointerType: ' + e.pointerType);
+    log('pointer count: ' + e.getPointerList().length);
+  });
+  test.addEventListener('pointerup', function(e) {
+    log('pointerup, pointerType: ' + e.pointerType);
+  });
+
+  function log(msg) {
+    test.innerHTML = msg + '<br/>' + test.innerHTML;
+  }
+
+  emitDoubleTaps(test);
+  test.addEventListener('gesturedoubletap', function() {
+    log('doubletap');
+  });
+
+  emitLongPresses(test);
+  test.addEventListener('gesturelongpress', function() {
+    log('longpress');
+  });
+
+  emitScale(test);
+  test.addEventListener('gesturescale', function(e) {
+    log('scale: ' + e.scale);
+  });
+</script>
