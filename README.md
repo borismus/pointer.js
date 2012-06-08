@@ -87,10 +87,10 @@ touch events are hijacked, and do not fire.
 The event payload for a pointer event includes the following important
 features:
 
-- {String} pointerType - the kind of pointer it is (touch, mouse, pen)
-- {Object} originalEvent - the original event payload from the
+- `{String} pointerType` - the kind of pointer it is (touch, mouse, pen)
+- `{Object} originalEvent` - the original event payload from the
   underlying event.
-- {Function} getPointerList() - gets the list of active pointers (ie
+- `{Function} getPointerList()` - gets the list of active pointers (ie
   mouse pressed, fingers on the screen).
 
 The bottom line is that you code your input to a single spec: pointer
