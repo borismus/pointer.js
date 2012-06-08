@@ -2,6 +2,8 @@ Pointer.js: A unified touch/mouse/pen input handler
 ===
 (with gestures)
 
+[Try some demos][demos].
+
 # Motivation/theory
 
 Problems with touch on the web:
@@ -77,15 +79,10 @@ same way as you would regular events:
     });
 
 Approach: override addEventListener to intercept `pointer*` events.
-(Alternative: have an explicit `el.emitPointers` call.)
-
-Pointer.js hijacks addEventListener to handle events named 'pointer'.
-This is necessary for performance reasons. Otherwise an event needs to
-be fired for every single DOM element that is an ancestor of the target,
-which is pretty slow.
+(Theoretical alternative: have an explicit `el.emitPointers` call.)
 
 As soon as you start listening for `pointer*` events, both mouse and
-touch events are hijacked, and should not fire.
+touch events are hijacked, and do not fire.
 
 The event payload for a pointer event includes the following important
 features:
@@ -95,6 +92,10 @@ features:
   underlying event.
 - {Function} getPointerList() - gets the list of active pointers (ie
   mouse pressed, fingers on the screen).
+
+The bottom line is that you code your input to a single spec: pointer
+events from pointer.js. The library abstracts all of the input
+differences for you under the consolidated model.
 
 ### Pointer API
 
@@ -114,16 +115,28 @@ tap, double tap, longpress, swipe, pinch-zoom, and rotate.
 
 Emit new gesture* events. For example, `gesturetap`, `gesturedoubletap`,
 `gesturelongpress`, `gesturescale`, etc. This is incompatible with
-Safari's gesturestart events :(
+Safari's gesturestart events, but in the future can also be consolidated
+under one umbrella.
 
-This can be done with the same `addEventListener` hack as proposed for
-pointer events. Basically, each of these `gesture*` events has a gesture
-recognizer associated with it. If, for example, gesturescale is
-specified, the pointer-event-based recognizer gets pulled into the event
-loop.
+This is done with the same `addEventListener` hack as is used for
+pointer events. Each of these `gesture*` events has a recognizer
+associated with it. If, for example, gesturescale is specified, the
+pointer-event-based recognizer gets pulled into the event loop.
 
-For gestures, the API requires an explicit `Gesture.emit.scale(element)`
-call.
+Each gesture has 1) a custom event, and 2) an associated function that
+enables the recognizer. This function takes an HTMLElement as its only
+argument. The following gestures are supported:
+
+    gesture           gesture event             emitter
+    ====================================================================
+    Double Tap        gesturedoubletap          Gesture.emit.doubleTap
+    Long Press        gesturelongpress          Gesture.emit.longPress
+    Scale             gesturescale              Gesture.emit.scale
+
+The scale gesture implements a pinch-zoom and provides the scaling factor
+as part of the event payload through `evt.scale`.
+
+# [Demos][demos]
 
 # Open questions
 
@@ -138,3 +151,4 @@ call.
 
 
 [jsperf]: http://jsperf.com/events-vs-functions/3
+[demos]: http://smus.com/m/pointer.js/demos/draw.html
