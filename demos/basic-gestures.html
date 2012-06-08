@@ -11,6 +11,7 @@
     margin: 0 auto;
     overflow: hidden;
     color: white;
+    -ms-touch-action: none;
   }
 
   body {
@@ -22,34 +23,17 @@
 </div>
 
 <!-- Pointer events library. -->
-<script src="pointer.js"></script>
-<script src="doubletap.js"></script>
-<script src="longpress.js"></script>
-<script src="scale.js"></script>
+<script src="../build/pointer.js"></script>
 <script>
 
   var test = document.querySelector('#test');
-  test.addEventListener('pointerdown', function(e) {
-    log('pointerdown, pointerType: ' + e.pointerType);
-  });
-  test.addEventListener('pointermove', function(e) {
-    log('pointermove, pointerType: ' + e.pointerType);
-    log('pointer count: ' + e.getPointerList().length);
-  });
-  test.addEventListener('pointerup', function(e) {
-    log('pointerup, pointerType: ' + e.pointerType);
-  });
 
-  function log(msg) {
-    test.innerHTML = msg + '<br/>' + test.innerHTML;
-  }
-
-  Gesture.emit.doubleTaps(test);
+  Gesture.emit.doubleTap(test);
   test.addEventListener('gesturedoubletap', function() {
     log('doubletap');
   });
 
-  Gesture.emit.longPresses(test);
+  Gesture.emit.longPress(test);
   test.addEventListener('gesturelongpress', function() {
     log('longpress');
   });
@@ -58,4 +42,9 @@
   test.addEventListener('gesturescale', function(e) {
     log('scale: ' + e.scale);
   });
+
+  function log(msg) {
+    test.innerHTML = msg + '<br/>' + test.innerHTML;
+  }
+
 </script>

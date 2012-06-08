@@ -1,9 +1,16 @@
 (function(exports) {
 
-  function Pointer(x, y, type) {
+  // TODO(smus): Come up with a better solution for this. This is bad because
+  // it might conflict with a touch ID. However, giving negative IDs is also
+  // bad because of code that makes assumptions about touch identifiers being
+  // positive integers.
+  var MOUSE_ID = 31337;
+
+  function Pointer(x, y, type, identifier) {
     this.x = x;
     this.y = y;
     this.type = type;
+    this.identifier = identifier;
   }
 
   var PointerTypes = {
@@ -32,13 +39,14 @@
     if (this.touchList) {
       for (var i = 0; i < this.touchList.length; i++) {
         var touch = this.touchList[i];
-        var pointer = new Pointer(touch.pageX, touch.pageY, PointerTypes.TOUCH);
+        var pointer = new Pointer(touch.pageX, touch.pageY,
+                                  PointerTypes.TOUCH, touch.identifier);
         pointers.push(pointer);
       }
     }
     if (this.mouseEvent) {
       pointers.push(new Pointer(this.mouseEvent.pageX, this.mouseEvent.pageY,
-                                  PointerTypes.MOUSE));
+                                  PointerTypes.MOUSE, MOUSE_ID));
     }
     return pointers;
   }
@@ -52,16 +60,7 @@
     target.dispatchEvent(event);
   }
 
-  function touchStartHandler(event) {
-    event.preventDefault();
-    setTouch(event);
-    var payload = {
-      pointerType: 'touch',
-      getPointerList: getPointerList.bind(this),
-      originalEvent: event
-    };
-    createPointerEvent('pointerdown', event.target, payload);
-  }
+  /*************** Mouse event handlers *****************/
 
   function mouseDownHandler(event) {
     event.preventDefault();
@@ -76,12 +75,40 @@
 
   function mouseMoveHandler(event) {
     event.preventDefault();
+    if (event.target.mouseEvent) {
+      setMouse(event);
+    }
     var payload = {
       pointerType: 'mouse',
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
     createPointerEvent('pointermove', event.target, payload);
+  }
+
+  function mouseUpHandler(event) {
+    event.preventDefault();
+    unsetMouse(event);
+    var payload = {
+      pointerType: 'mouse',
+      getPointerList: getPointerList.bind(this),
+      originalEvent: event
+    };
+    createPointerEvent('pointerup', event.target, payload);
+  }
+
+  /*************** Touch event handlers *****************/
+
+  function touchStartHandler(event) {
+    console.log('touchstart');
+    event.preventDefault();
+    setTouch(event);
+    var payload = {
+      pointerType: 'touch',
+      getPointerList: getPointerList.bind(this),
+      originalEvent: event
+    };
+    createPointerEvent('pointerdown', event.target, payload);
   }
 
   function touchMoveHandler(event) {
@@ -106,20 +133,23 @@
     createPointerEvent('pointerup', event.target, payload);
   }
 
-  function mouseUpHandler(event) {
-    event.preventDefault();
-    unsetMouse(event);
-    var payload = {
-      pointerType: 'mouse',
-      getPointerList: getPointerList.bind(this),
-      originalEvent: event
-    };
-    createPointerEvent('pointerup', event.target, payload);
-  }
-
   function mouseOutHandler(event) {
     event.preventDefault();
     unsetMouse(event);
+  }
+
+  /*************** MSIE Pointer event handlers *****************/
+
+  function pointerDownHandler(event) {
+    log('pointerdown');
+  }
+
+  function pointerMoveHandler(event) {
+    log('pointermove');
+  }
+
+  function pointerUpHandler(event) {
+    log('pointerup');
   }
 
   /**
@@ -129,19 +159,42 @@
   function emitPointers(el) {
     if (!el.isPointerEmitter) {
       // Latch on to all relevant events for this element.
-      el.addEventListener('touchstart', touchStartHandler);
-      el.addEventListener('touchmove', touchMoveHandler);
-      el.addEventListener('touchend', touchEndHandler);
-      el.addEventListener('mousedown', mouseDownHandler);
-      el.addEventListener('mousemove', mouseMoveHandler);
-      el.addEventListener('mouseup', mouseUpHandler);
-
-      // Necessary for the edge case that the mouse is down and you drag out of
-      // the area.
-      el.addEventListener('mouseout', mouseOutHandler);
+      if (isTouch()) {
+        el.addEventListener('touchstart', touchStartHandler);
+        el.addEventListener('touchmove', touchMoveHandler);
+        el.addEventListener('touchend', touchEndHandler);
+      } else if (isPointer()) {
+        el.addEventListener('MSPointerDown', pointerDownHandler);
+        el.addEventListener('MSPointerMove', pointerMoveHandler);
+        el.addEventListener('MSPointerUp', pointerUpHandler);
+      } else {
+        el.addEventListener('mousedown', mouseDownHandler);
+        el.addEventListener('mousemove', mouseMoveHandler);
+        el.addEventListener('mouseup', mouseUpHandler);
+        // Necessary for the edge case that the mouse is down and you drag out of
+        // the area.
+        el.addEventListener('mouseout', mouseOutHandler);
+      }
 
       el.isPointerEmitter = true;
     }
+  }
+
+  /**
+   * @return {Boolean} Returns true iff this user agent supports touch events.
+   */
+  function isTouch() {
+    return Modernizr.touch;
+  }
+
+  /**
+   * @return {Boolean} Returns true iff this user agent supports MSIE pointer
+   * events.
+   */
+  function isPointer() {
+    return false;
+    // TODO(smus): Implement support for pointer events.
+    // return window.navigator.msPointerEnabled;
   }
 
   /**
@@ -157,11 +210,11 @@
   var oldAddEventListener = HTMLElement.prototype.addEventListener;
   var pointerElements = {};
   HTMLElement.prototype.addEventListener = function(type, listener, useCapture) {
-    if (type.indexOf('pointer') == 0) {
+    if (type.indexOf('pointer') === 0) {
       emitPointers(this);
     }
     oldAddEventListener.call(this, type, listener, useCapture);
-  }
+  };
 
   exports.createEvent = createPointerEvent;
 

@@ -5,7 +5,7 @@
  * for a while (without movement).
  */
 (function(exports) {
-  const LONGPRESS_TIME = 600;
+  var LONGPRESS_TIME = 600;
 
   function pointerDown(e) {
     // Start a timer.
@@ -16,6 +16,7 @@
   }
 
   function pointerMove(e) {
+    // TODO(smus): allow for small movement and still emit a longpress.
     clearTimeout(this.longPressTimer);
   }
 
@@ -27,11 +28,13 @@
    * Make the specified element create gesturetap events.
    */
   function emitLongPresses(el) {
-    el.addEventListener('pointerdown', pointerDown)
-    el.addEventListener('pointermove', pointerMove)
-    el.addEventListener('pointerup', pointerUp)
+    el.addEventListener('pointerdown', pointerDown);
+    el.addEventListener('pointermove', pointerMove);
+    el.addEventListener('pointerup', pointerUp);
   }
 
-  exports.emitLongPresses = emitLongPresses;
+  exports.Gesture = exports.Gesture || {};
+  exports.Gesture.emit = exports.Gesture.emit || {};
+  exports.Gesture.emit.longPress = emitLongPresses;
 
 })(window);

@@ -66,11 +66,13 @@
    * Make the specified element create gesturetap events.
    */
   function emitScale(el) {
-    el.addEventListener('pointerdown', pointerDown)
-    el.addEventListener('pointermove', pointerMove)
-    el.addEventListener('pointerup', pointerUp)
+    el.addEventListener('pointerdown', pointerDown);
+    el.addEventListener('pointermove', pointerMove);
+    el.addEventListener('pointerup', pointerUp);
   }
 
-  exports.emitScale = emitScale;
+  exports.Gesture = exports.Gesture || {};
+  exports.Gesture.emit = exports.Gesture.emit || {};
+  exports.Gesture.emit.scale = emitScale;
 
 })(window);
