@@ -1,6 +1,6 @@
 Unified touch/mouse/pen handling with gesture support
 ===
-Inspired by IE10 pointer events.
+Inspired by IE10 [pointer events][ie-pointer].
 
 [Try some demos][demos].
 
