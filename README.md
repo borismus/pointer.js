@@ -113,7 +113,7 @@ tap, double tap, longpress, swipe, pinch-zoom, and rotate.
 
 ### Gesture API
 
-Emit new gesture* events. For example, `gesturetap`, `gesturedoubletap`,
+Emit new gesture* events. For example, `gesturedoubletap`,
 `gesturelongpress`, `gesturescale`, etc. This is incompatible with
 Safari's gesturestart events, but in the future can also be consolidated
 under one umbrella.
