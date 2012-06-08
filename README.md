@@ -1,6 +1,6 @@
-Pointer.js: A unified touch/mouse/pen input handler
+Unified touch/mouse/pen handling with gesture support
 ===
-(with gestures)
+Inspired by IE10 pointer events.
 
 [Try some demos][demos].
 
