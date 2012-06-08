@@ -1,5 +1,6 @@
-Pointer.js: A unified touch/mouse/pen input handler with gestures
+Pointer.js: A unified touch/mouse/pen input handler
 ===
+(with gestures)
 
 # Motivation/theory
 
