@@ -208,7 +208,6 @@
    * Option 2: Replace addEventListener with a custom version.
    */
   var oldAddEventListener = HTMLElement.prototype.addEventListener;
-  var pointerElements = {};
   HTMLElement.prototype.addEventListener = function(type, listener, useCapture) {
     if (type.indexOf('pointer') === 0) {
       emitPointers(this);

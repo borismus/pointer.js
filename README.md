@@ -123,15 +123,20 @@ pointer events. Each of these `gesture*` events has a recognizer
 associated with it. If, for example, gesturescale is specified, the
 pointer-event-based recognizer gets pulled into the event loop.
 
-Each gesture has 1) a custom event, and 2) an associated function that
-enables the recognizer. This function takes an HTMLElement as its only
-argument. The following gestures are supported:
+Each gesture has a custom event associated with it. This function takes
+an HTMLElement as its only argument. The following gestures are
+supported:
 
-    gesture           gesture event             emitter
-    ====================================================================
-    Double Tap        gesturedoubletap          Gesture.emit.doubleTap
-    Long Press        gesturelongpress          Gesture.emit.longPress
-    Scale             gesturescale              Gesture.emit.scale
+    gesture           gesture event
+    ===================================
+    Double Tap        gesturedoubletap
+    Long Press        gesturelongpress
+    Scale             gesturescale
+
+This is a nice place to contribute if you're so inclined. Gesture
+recognizers can easily be plugged into this architecture. They are
+completely standalone and can be registered easily. For an example, take
+a look at the [`doubletap` handler][doubletap].
 
 The scale gesture implements a pinch-zoom and provides the scaling factor
 as part of the event payload through `evt.scale`.
@@ -151,4 +156,5 @@ as part of the event payload through `evt.scale`.
 
 
 [jsperf]: http://jsperf.com/events-vs-functions/3
-[demos]: http://smus.com/m/pointer.js/demos/draw.html
+[demos]: http://borismus.github.com/pointer.js/demos/draw.html
+[doubletap]: https://github.com/borismus/pointer.js/blob/master/js/doubletap.js

@@ -24,8 +24,6 @@
     el.addEventListener('pointerdown', pointerDown);
   }
 
-  exports.Gesture = exports.Gesture || {};
-  exports.Gesture.emit = exports.Gesture.emit || {};
-  exports.Gesture.emit.doubleTap = emitDoubleTaps;
+  exports.Gesture._gestureHandlers.gesturedoubletap = emitDoubleTaps;
 
 })(window);

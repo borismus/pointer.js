@@ -28,17 +28,14 @@
 
   var test = document.querySelector('#test');
 
-  Gesture.emit.doubleTap(test);
   test.addEventListener('gesturedoubletap', function() {
     log('doubletap');
   });
 
-  Gesture.emit.longPress(test);
   test.addEventListener('gesturelongpress', function() {
     log('longpress');
   });
 
-  Gesture.emit.scale(test);
   test.addEventListener('gesturescale', function(e) {
     log('scale: ' + e.scale);
   });

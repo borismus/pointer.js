@@ -5,6 +5,7 @@ module.exports = function(grunt) {
       //'js/bind-polyfill.js',
       'js/libs/modernizr-touch.js',
       'js/pointer.js',
+      'js/gesture.js',
       'js/doubletap.js',
       'js/longpress.js',
       'js/scale.js']

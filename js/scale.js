@@ -71,8 +71,6 @@
     el.addEventListener('pointerup', pointerUp);
   }
 
-  exports.Gesture = exports.Gesture || {};
-  exports.Gesture.emit = exports.Gesture.emit || {};
-  exports.Gesture.emit.scale = emitScale;
+  exports.Gesture._gestureHandlers.gesturescale = emitScale;
 
 })(window);

@@ -420,7 +420,6 @@ window.Modernizr = (function( window, document, undefined ) {
    * Option 2: Replace addEventListener with a custom version.
    */
   var oldAddEventListener = HTMLElement.prototype.addEventListener;
-  var pointerElements = {};
   HTMLElement.prototype.addEventListener = function(type, listener, useCapture) {
     if (type.indexOf('pointer') === 0) {
       emitPointers(this);
@@ -429,6 +428,27 @@ window.Modernizr = (function( window, document, undefined ) {
   };
 
   exports.createEvent = createPointerEvent;
+
+})(window);
+
+(function(exports) {
+
+  var oldAddEventListener = HTMLElement.prototype.addEventListener;
+  HTMLElement.prototype.addEventListener = function(type, listener, useCapture) {
+    if (type.indexOf('gesture') === 0) {
+      var handler = Gesture._gestureHandlers[type];
+      if (handler) {
+        handler(this);
+      } else {
+        console.error('Warning: no handler found for {{evt}}.'
+                      .replace('{{evt}}', type));
+      }
+    }
+    oldAddEventListener.call(this, type, listener, useCapture);
+  };
+
+  exports.Gesture = exports.Gesture || {};
+  exports.Gesture._gestureHandlers = exports.Gesture._gestureHandlers || {};
 
 })(window);
 
@@ -458,9 +478,7 @@ window.Modernizr = (function( window, document, undefined ) {
     el.addEventListener('pointerdown', pointerDown);
   }
 
-  exports.Gesture = exports.Gesture || {};
-  exports.Gesture.emit = exports.Gesture.emit || {};
-  exports.Gesture.emit.doubleTap = emitDoubleTaps;
+  exports.Gesture._gestureHandlers.gesturedoubletap = emitDoubleTaps;
 
 })(window);
 
@@ -499,9 +517,7 @@ window.Modernizr = (function( window, document, undefined ) {
     el.addEventListener('pointerup', pointerUp);
   }
 
-  exports.Gesture = exports.Gesture || {};
-  exports.Gesture.emit = exports.Gesture.emit || {};
-  exports.Gesture.emit.longPress = emitLongPresses;
+  exports.Gesture._gestureHandlers.gesturelongpress = emitLongPresses;
 
 })(window);
 
@@ -578,8 +594,6 @@ window.Modernizr = (function( window, document, undefined ) {
     el.addEventListener('pointerup', pointerUp);
   }
 
-  exports.Gesture = exports.Gesture || {};
-  exports.Gesture.emit = exports.Gesture.emit || {};
-  exports.Gesture.emit.scale = emitScale;
+  exports.Gesture._gestureHandlers.gesturescale = emitScale;
 
 })(window);
