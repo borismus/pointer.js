@@ -428,6 +428,7 @@ window.Modernizr = (function( window, document, undefined ) {
   };
 
   exports.createEvent = createPointerEvent;
+  exports.PointerTypes = PointerTypes;
 
 })(window);
 

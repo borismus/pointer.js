@@ -216,5 +216,6 @@
   };
 
   exports.createEvent = createPointerEvent;
+  exports.PointerTypes = PointerTypes;
 
 })(window);
