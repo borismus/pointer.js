@@ -83,7 +83,16 @@ a look at the [`doubletap` handler][doubletap].
 The scale gesture implements a pinch-zoom and provides the scaling factor
 as part of the event payload through `evt.scale`.
 
-# [Demos][demos]
+# Demos
+
+- [Multi-touch drawing][demo-draw]
+- [Pointer event logger][demo-pointer]
+- [Gesture event logger][demo-gesture] (supports scale, longpress and doubletap)
+
+[demo-draw]: http://borismus.github.com/pointer.js/demos/draw.html
+[demo-pointer]: http://borismus.github.com/pointer.js/demos/basic-pointers.html
+[demo-gesture]: http://borismus.github.com/pointer.js/demos/basic-gestures.html
+
 
 # Open questions
 
