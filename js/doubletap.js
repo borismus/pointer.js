@@ -12,7 +12,7 @@
       this.lastDownTime = 0;
       var payload = {
       };
-      window.createEvent('gesturedoubletap', e.target, payload);
+      window._createCustomEvent('gesturedoubletap', e.target, payload);
     }
     this.lastDownTime = now;
   }

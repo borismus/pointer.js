@@ -263,7 +263,7 @@ window.Modernizr = (function( window, document, undefined ) {
     return pointers;
   }
 
-  function createPointerEvent(eventName, target, payload) {
+  function createCustomEvent(eventName, target, payload) {
     var event = document.createEvent('Event');
     event.initEvent(eventName, true, true);
     for (var k in payload) {
@@ -282,7 +282,7 @@ window.Modernizr = (function( window, document, undefined ) {
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createPointerEvent('pointerdown', event.target, payload);
+    createCustomEvent('pointerdown', event.target, payload);
   }
 
   function mouseMoveHandler(event) {
@@ -295,7 +295,7 @@ window.Modernizr = (function( window, document, undefined ) {
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createPointerEvent('pointermove', event.target, payload);
+    createCustomEvent('pointermove', event.target, payload);
   }
 
   function mouseUpHandler(event) {
@@ -306,7 +306,7 @@ window.Modernizr = (function( window, document, undefined ) {
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createPointerEvent('pointerup', event.target, payload);
+    createCustomEvent('pointerup', event.target, payload);
   }
 
   /*************** Touch event handlers *****************/
@@ -320,7 +320,7 @@ window.Modernizr = (function( window, document, undefined ) {
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createPointerEvent('pointerdown', event.target, payload);
+    createCustomEvent('pointerdown', event.target, payload);
   }
 
   function touchMoveHandler(event) {
@@ -331,7 +331,7 @@ window.Modernizr = (function( window, document, undefined ) {
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createPointerEvent('pointermove', event.target, payload);
+    createCustomEvent('pointermove', event.target, payload);
   }
 
   function touchEndHandler(event) {
@@ -342,7 +342,7 @@ window.Modernizr = (function( window, document, undefined ) {
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createPointerEvent('pointerup', event.target, payload);
+    createCustomEvent('pointerup', event.target, payload);
   }
 
   function mouseOutHandler(event) {
@@ -419,23 +419,39 @@ window.Modernizr = (function( window, document, undefined ) {
   /**
    * Option 2: Replace addEventListener with a custom version.
    */
-  var oldAddEventListener = HTMLElement.prototype.addEventListener;
-  HTMLElement.prototype.addEventListener = function(type, listener, useCapture) {
+  function augmentAddEventListener(baseElementClass, customEventListener) {
+    var oldAddEventListener = baseElementClass.prototype.addEventListener;
+    baseElementClass.prototype.addEventListener = function(type, listener, useCapture) {
+      customEventListener.call(this, type, listener, useCapture);
+      oldAddEventListener.call(this, type, listener, useCapture);
+    };
+  }
+
+  function synthesizePointerEvents(type, listener, useCapture) {
     if (type.indexOf('pointer') === 0) {
       emitPointers(this);
     }
-    oldAddEventListener.call(this, type, listener, useCapture);
-  };
+  }
 
-  exports.createEvent = createPointerEvent;
+  // Note: Firefox doesn't work like other browsers... overriding HTMLElement
+  // doesn't actually affect anything. Special case for Firefox:
+  if (navigator.userAgent.match(/Firefox/)) {
+    // TODO: fix this for the general case.
+    augmentAddEventListener(HTMLDivElement, synthesizePointerEvents);
+    augmentAddEventListener(HTMLCanvasElement, synthesizePointerEvents);
+  } else {
+    augmentAddEventListener(HTMLElement, synthesizePointerEvents);
+  }
+
+  exports._createCustomEvent = createCustomEvent;
+  exports._augmentAddEventListener = augmentAddEventListener;
   exports.PointerTypes = PointerTypes;
 
 })(window);
 
 (function(exports) {
 
-  var oldAddEventListener = HTMLElement.prototype.addEventListener;
-  HTMLElement.prototype.addEventListener = function(type, listener, useCapture) {
+  function synthesizeGestureEvents(type, listener, useCapture) {
     if (type.indexOf('gesture') === 0) {
       var handler = Gesture._gestureHandlers[type];
       if (handler) {
@@ -445,8 +461,17 @@ window.Modernizr = (function( window, document, undefined ) {
                       .replace('{{evt}}', type));
       }
     }
-    oldAddEventListener.call(this, type, listener, useCapture);
-  };
+  }
+
+  // Note: Firefox doesn't work like other browsers... overriding HTMLElement
+  // doesn't actually affect anything. Special case for Firefox:
+  if (navigator.userAgent.match(/Firefox/)) {
+    // TODO: fix this for the general case.
+    window._augmentAddEventListener(HTMLDivElement, synthesizeGestureEvents);
+    window._augmentAddEventListener(HTMLCanvasElement, synthesizeGestureEvents);
+  } else {
+    window._augmentAddEventListener(HTMLElement, synthesizeGestureEvents);
+  }
 
   exports.Gesture = exports.Gesture || {};
   exports.Gesture._gestureHandlers = exports.Gesture._gestureHandlers || {};
@@ -467,7 +492,7 @@ window.Modernizr = (function( window, document, undefined ) {
       this.lastDownTime = 0;
       var payload = {
       };
-      window.createEvent('gesturedoubletap', e.target, payload);
+      window._createCustomEvent('gesturedoubletap', e.target, payload);
     }
     this.lastDownTime = now;
   }
@@ -496,7 +521,7 @@ window.Modernizr = (function( window, document, undefined ) {
     // Start a timer.
     this.longPressTimer = setTimeout(function() {
       payload = {};
-      window.createEvent('gesturelongpress', e.target, payload);
+      window._createCustomEvent('gesturelongpress', e.target, payload);
     }, LONGPRESS_TIME);
   }
 
@@ -577,7 +602,7 @@ window.Modernizr = (function( window, document, undefined ) {
         var payload = {
           scale: scale
         };
-        window.createEvent('gesturescale', e.target, payload);
+        window._createCustomEvent('gesturescale', e.target, payload);
       }
     }
   }

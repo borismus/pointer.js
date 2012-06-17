@@ -53,7 +53,7 @@
         var payload = {
           scale: scale
         };
-        window.createEvent('gesturescale', e.target, payload);
+        window._createCustomEvent('gesturescale', e.target, payload);
       }
     }
   }

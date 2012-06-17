@@ -51,7 +51,7 @@
     return pointers;
   }
 
-  function createPointerEvent(eventName, target, payload) {
+  function createCustomEvent(eventName, target, payload) {
     var event = document.createEvent('Event');
     event.initEvent(eventName, true, true);
     for (var k in payload) {
@@ -70,7 +70,7 @@
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createPointerEvent('pointerdown', event.target, payload);
+    createCustomEvent('pointerdown', event.target, payload);
   }
 
   function mouseMoveHandler(event) {
@@ -83,7 +83,7 @@
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createPointerEvent('pointermove', event.target, payload);
+    createCustomEvent('pointermove', event.target, payload);
   }
 
   function mouseUpHandler(event) {
@@ -94,7 +94,7 @@
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createPointerEvent('pointerup', event.target, payload);
+    createCustomEvent('pointerup', event.target, payload);
   }
 
   /*************** Touch event handlers *****************/
@@ -108,7 +108,7 @@
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createPointerEvent('pointerdown', event.target, payload);
+    createCustomEvent('pointerdown', event.target, payload);
   }
 
   function touchMoveHandler(event) {
@@ -119,7 +119,7 @@
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createPointerEvent('pointermove', event.target, payload);
+    createCustomEvent('pointermove', event.target, payload);
   }
 
   function touchEndHandler(event) {
@@ -130,7 +130,7 @@
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createPointerEvent('pointerup', event.target, payload);
+    createCustomEvent('pointerup', event.target, payload);
   }
 
   function mouseOutHandler(event) {
@@ -207,15 +207,32 @@
   /**
    * Option 2: Replace addEventListener with a custom version.
    */
-  var oldAddEventListener = HTMLElement.prototype.addEventListener;
-  HTMLElement.prototype.addEventListener = function(type, listener, useCapture) {
+  function augmentAddEventListener(baseElementClass, customEventListener) {
+    var oldAddEventListener = baseElementClass.prototype.addEventListener;
+    baseElementClass.prototype.addEventListener = function(type, listener, useCapture) {
+      customEventListener.call(this, type, listener, useCapture);
+      oldAddEventListener.call(this, type, listener, useCapture);
+    };
+  }
+
+  function synthesizePointerEvents(type, listener, useCapture) {
     if (type.indexOf('pointer') === 0) {
       emitPointers(this);
     }
-    oldAddEventListener.call(this, type, listener, useCapture);
-  };
+  }
 
-  exports.createEvent = createPointerEvent;
+  // Note: Firefox doesn't work like other browsers... overriding HTMLElement
+  // doesn't actually affect anything. Special case for Firefox:
+  if (navigator.userAgent.match(/Firefox/)) {
+    // TODO: fix this for the general case.
+    augmentAddEventListener(HTMLDivElement, synthesizePointerEvents);
+    augmentAddEventListener(HTMLCanvasElement, synthesizePointerEvents);
+  } else {
+    augmentAddEventListener(HTMLElement, synthesizePointerEvents);
+  }
+
+  exports._createCustomEvent = createCustomEvent;
+  exports._augmentAddEventListener = augmentAddEventListener;
   exports.PointerTypes = PointerTypes;
 
 })(window);
