@@ -9,44 +9,44 @@ Modified to use pointer.js by Boris Smus. For more information, see
 https://github.com/borismus/pointer.js.
 -->
 <html lang=en>
-<head>
-<meta charset=utf-8>
-<meta name="viewport" content="width=device-width; height=device-height; initial-scale=1.0; maximum-scale=1.0;" /> 
-<title></title>
-<style type="text/css"> 
-	
-	* {
-	  -webkit-touch-callout: none; /* prevent callout to copy image, etc when tap to hold */
-	  -webkit-text-size-adjust: none; /* prevent webkit from resizing text to fit */
-	/* make transparent link selection, adjust last value opacity 0 to 1.0 */
-	  -webkit-tap-highlight-color: rgba(0,0,0,0); 
-	  -webkit-user-select: none; /* prevent copy paste, to allow, change 'none' to 'text' */
-	  -webkit-tap-highlight-color: rgba(0,0,0,0); 
-	}
-	
-	body {
-		background-color: #000000;
-		margin: 0px;
-	}
-	canvas {
-		display:block; 
-		position:absolute; 
-	}
-	.container {
-		width:auto;
-		text-align:center;
-		background-color:#ff0000;
-	}
-</style>
+  <head>
+    <meta charset=utf-8>
+    <meta name="viewport" content="width=device-width; height=device-height; initial-scale=1.0; maximum-scale=1.0;" /> 
+    <title></title>
+    <style type="text/css"> 
+
+      * {
+        -webkit-touch-callout: none; /* prevent callout to copy image, etc when tap to hold */
+        -webkit-text-size-adjust: none; /* prevent webkit from resizing text to fit */
+        /* make transparent link selection, adjust last value opacity 0 to 1.0 */
+        -webkit-tap-highlight-color: rgba(0,0,0,0); 
+        -webkit-user-select: none; /* prevent copy paste, to allow, change 'none' to 'text' */
+        -webkit-tap-highlight-color: rgba(0,0,0,0); 
+      }
+
+      body {
+        background-color: #000000;
+        margin: 0px;
+      }
+      canvas {
+        display:block; 
+        position:absolute; 
+      }
+      .container {
+        width:auto;
+        text-align:center;
+        background-color:#ff0000;
+      }
+    </style>
 
 
-</head>
-<body onload = "init()">
-<script src="js/Vector2.js"></script>
-<script src="js/ShipMovingTouch.js"></script>
-<script src="js/BulletSebs.js"></script>
-<script src="../build/pointer.js"></script>
-<script>
+  </head>
+  <body onload = "init()">
+    <script src="js/Vector2.js"></script>
+    <script src="js/ShipMovingTouch.js"></script>
+    <script src="js/BulletSebs.js"></script>
+    <script src="../build/pointer.js"></script>
+    <script>
 // shim layer with setTimeout fallback
 window.requestAnimFrame = (function(){
   return  window.requestAnimationFrame       ||
@@ -60,246 +60,211 @@ window.requestAnimFrame = (function(){
 })();
 
 var canvas,
- 	c, // c is the canvas' context 2D
-	container, 
-	halfWidth, 
-	halfHeight,
-	leftTouchID = -1, 
-	leftTouchPos = new Vector2(0,0),
-	leftTouchStartPos = new Vector2(0,0),
-	leftVector = new Vector2(0,0); 
-	
+c, // c is the canvas' context 2D
+container, 
+halfWidth, 
+halfHeight,
+leftPointerID = -1, 
+leftPointerPos = new Vector2(0,0),
+leftPointerStartPos = new Vector2(0,0),
+leftVector = new Vector2(0,0); 
+
 
 setupCanvas();
 
-var mouseX, mouseY, 
-	// is this running in a touch capable environment?
-	touchable = true,
-	touches = [], // array of touch vectors
-	ship = new ShipMoving(halfWidth, halfHeight)
-	bullets = [],
-	spareBullets = [];
-	
-	
+var	pointers = [], // array of touch vectors
+ship = new ShipMoving(halfWidth, halfHeight)
+bullets = [],
+spareBullets = [];
+
+
 document.body.appendChild(ship.canvas);
 
 //setInterval(draw, 1000/35); 
 requestAnimFrame(draw);
 
 
-if(touchable) {
-	canvas.addEventListener( 'pointerdown', onTouchStart, false );
-	canvas.addEventListener( 'pointermove', onTouchMove, false );
-	canvas.addEventListener( 'pointerup', onTouchEnd, false );
-	window.onorientationchange = resetCanvas;  
-	window.onresize = resetCanvas;  
-} else {
-	
-	canvas.addEventListener( 'mousemove', onMouseMove, false );
-}
+canvas.addEventListener( 'pointerdown', onPointerDown, false );
+canvas.addEventListener( 'pointermove', onPointerMove, false );
+canvas.addEventListener( 'pointerup', onPointerUp, false );
+window.onorientationchange = resetCanvas;  
+window.onresize = resetCanvas;  
 
 function resetCanvas (e) {  
- 	// resize the canvas - but remember - this clears the canvas too. 
-  	canvas.width = window.innerWidth; 
-	canvas.height = window.innerHeight;
-	
-	halfWidth = canvas.width/2; 
-	halfHeight = canvas.height/2;
-	
-	//make sure we scroll to the top left. 
-	window.scrollTo(0,0); 
+  // resize the canvas - but remember - this clears the canvas too. 
+  canvas.width = window.innerWidth; 
+  canvas.height = window.innerHeight;
+
+  halfWidth = canvas.width/2; 
+  halfHeight = canvas.height/2;
+
+  //make sure we scroll to the top left. 
+  window.scrollTo(0,0); 
 }
 
 function init(){
-	
+
 }
 
 function draw() {
-  
-	c.clearRect(0,0,canvas.width, canvas.height); 
 
-	ship.targetVel.copyFrom(leftVector);
-	ship.targetVel.multiplyEq(0.15);
-	
-	ship.update(); 
-	
-	with(ship.pos) {
-		if(x<0) x = canvas.width; 
-		else if(x>canvas.width) x = 0;
-		if(y<0) y = canvas.height; 
-		else if (y>canvas.height) y = 0; 
-	}
-	
-	ship.draw(); 
-	
-	
-	for (var i = 0; i < bullets.length; i++) {
-		var bullet = bullets[i]; 
-		if(!bullet.enabled) continue; 
-		bullet.update(); 
-		bullet.draw(c); 
-		if(!bullet.enabled)
-		{
-			spareBullets.push(bullet); 
-			
-		}
-		
-		
-	}
-	
-		for(var i=0; i<touches.length; i++) {
-			
-			var touch = touches[i]; 
-			
-			if(touch.identifier == leftTouchID){
-				c.beginPath(); 
-				c.strokeStyle = "cyan"; 
-				c.lineWidth = 6; 
-				c.arc(leftTouchStartPos.x, leftTouchStartPos.y, 40,0,Math.PI*2,true); 
-				c.stroke();
-				c.beginPath(); 
-				c.strokeStyle = "cyan"; 
-				c.lineWidth = 2; 
-				c.arc(leftTouchStartPos.x, leftTouchStartPos.y, 60,0,Math.PI*2,true); 
-				c.stroke();
-				c.beginPath(); 
-				c.strokeStyle = "cyan"; 
-				c.arc(leftTouchPos.x, leftTouchPos.y, 40, 0,Math.PI*2, true); 
-				c.stroke(); 
-				
-			} else {
-				
-				c.beginPath(); 
-				c.fillStyle = "white";
-				c.fillText("touch id : "+touch.identifier+" x:"+touch.x+" y:"+touch.y, touch.x+30, touch.y-30); 
+  c.clearRect(0,0,canvas.width, canvas.height); 
 
-				c.beginPath(); 
-				c.strokeStyle = "red";
-				c.lineWidth = "6";
-				c.arc(touch.x, touch.y, 40, 0, Math.PI*2, true); 
-				c.stroke();
-			}
-		}
-	//c.fillText("hello", 0,0); 
-	
+  ship.targetVel.copyFrom(leftVector);
+  ship.targetVel.multiplyEq(0.15);
+
+  ship.update(); 
+
+  with(ship.pos) {
+    if(x<0) x = canvas.width; 
+    else if(x>canvas.width) x = 0;
+    if(y<0) y = canvas.height; 
+    else if (y>canvas.height) y = 0; 
+  }
+
+  ship.draw(); 
+
+
+  for (var i = 0; i < bullets.length; i++) {
+    var bullet = bullets[i]; 
+    if(!bullet.enabled) continue; 
+    bullet.update(); 
+    bullet.draw(c); 
+    if(!bullet.enabled)
+    {
+      spareBullets.push(bullet); 
+
+    }
+
+
+  }
+
+  for(var i=0; i<pointers.length; i++) {
+
+    var pointer = pointers[i]; 
+
+    if(pointer.identifier == leftPointerID){
+      c.beginPath(); 
+      c.strokeStyle = "cyan"; 
+      c.lineWidth = 6; 
+      c.arc(leftPointerStartPos.x, leftPointerStartPos.y, 40,0,Math.PI*2,true); 
+      c.stroke();
+      c.beginPath(); 
+      c.strokeStyle = "cyan"; 
+      c.lineWidth = 2; 
+      c.arc(leftPointerStartPos.x, leftPointerStartPos.y, 60,0,Math.PI*2,true); 
+      c.stroke();
+      c.beginPath(); 
+      c.strokeStyle = "cyan"; 
+      c.arc(leftPointerPos.x, leftPointerPos.y, 40, 0,Math.PI*2, true); 
+      c.stroke(); 
+
+      } else {
+
+      c.beginPath(); 
+      c.fillStyle = "white";
+      c.fillText(pointer.type + " id : "+pointer.identifier+" x:"+pointer.x+" y:"+pointer.y, pointer.x+30, pointer.y-30); 
+
+      c.beginPath(); 
+      c.strokeStyle = "red";
+      c.lineWidth = "6";
+      c.arc(pointer.x, pointer.y, 40, 0, Math.PI*2, true); 
+      c.stroke();
+    }
+  }
+  //c.fillText("hello", 0,0); 
+
   requestAnimFrame(draw);
 }
 
 function makeBullet() {
-	
-	var bullet;
-	
-	if(spareBullets.length>0) {
-		
-		bullet = spareBullets.pop(); 
-		bullet.reset(ship.pos.x, ship.pos.y, ship.angle); 
-		
-	} else {
-		
-		bullet = new Bullet(ship.pos.x, ship.pos.y, ship.angle); 
-		bullets.push(bullet);
 
-	}
-	
-	bullet.vel.plusEq(ship.vel); 
-	
-	
+  var bullet;
+
+  if(spareBullets.length>0) {
+
+    bullet = spareBullets.pop(); 
+    bullet.reset(ship.pos.x, ship.pos.y, ship.angle); 
+
+    } else {
+
+    bullet = new Bullet(ship.pos.x, ship.pos.y, ship.angle); 
+    bullets.push(bullet);
+
+  }
+
+  bullet.vel.plusEq(ship.vel); 
+
+
 }
 
-/*	
- *	Touch event (e) properties : 
- *	e.touches: 			Array of touch objects for every finger currently touching the screen
- *	e.targetTouches: 	Array of touch objects for every finger touching the screen that
- *						originally touched down on the DOM object the transmitted the event.
- *	e.changedTouches	Array of touch objects for touches that are changed for this event. 					
- *						I'm not sure if this would ever be a list of more than one, but would 
- *						be bad to assume. 
- *
- *	Touch objects : 
- *
- *	identifier: An identifying number, unique to each touch event
- *	target: DOM object that broadcast the event
- *	clientX: X coordinate of touch relative to the viewport (excludes scroll offset)
- *	clientY: Y coordinate of touch relative to the viewport (excludes scroll offset)
- *	screenX: Relative to the screen
- *	screenY: Relative to the screen
- *	pageX: Relative to the full page (includes scrolling)
- *	pageY: Relative to the full page (includes scrolling)
- */	
+function onPointerDown(e) {
+  pointers = e.getPointerList();
 
-function onTouchStart(e) {
-  touches = e.getPointerList();
- 
-	for(var i = 0; i<touches.length; i++){
-		var touch =touches[i]; 
-		if((leftTouchID<0) && (touch.x<halfWidth))
-		{
-			leftTouchID = touch.identifier; 
-			leftTouchStartPos.reset(touch.x, touch.y); 	
-			leftTouchPos.copyFrom(leftTouchStartPos); 
-			leftVector.reset(0,0); 
-			continue; 		
-		} else {
-			
-			makeBullet(); 
-			
-		}	
-	}
+  for(var i = 0; i<pointers.length; i++){
+    var pointer =pointers[i]; 
+    if((leftPointerID<0) && (pointer.x<halfWidth))
+    {
+      leftPointerID = pointer.identifier; 
+      leftPointerStartPos.reset(pointer.x, pointer.y); 	
+      leftPointerPos.copyFrom(leftPointerStartPos); 
+      leftVector.reset(0,0); 
+      continue; 		
+      } else {
+
+      makeBullet(); 
+
+    }	
+  }
 }
- 
-function onTouchMove(e) {
-	 // Prevent the browser from doing its default thing (scroll, zoom)
-  touches = e.getPointerList();
-	
-	for(var i = 0; i<touches.length; i++){
-		var touch =touches[i]; 
-		if(leftTouchID == touch.identifier)
-		{
-			leftTouchPos.reset(touch.x, touch.y); 
-			leftVector.copyFrom(leftTouchPos); 
-			leftVector.minusEq(leftTouchStartPos); 	
-			break; 		
-		}		
-	}
-	
-	
+
+function onPointerMove(e) {
+  // Prevent the browser from doing its default thing (scroll, zoom)
+  pointers = e.getPointerList();
+
+  for(var i = 0; i<pointers.length; i++){
+    var pointer =pointers[i]; 
+    if(leftPointerID == pointer.identifier)
+    {
+      leftPointerPos.reset(pointer.x, pointer.y); 
+      leftVector.copyFrom(leftPointerPos); 
+      leftVector.minusEq(leftPointerStartPos); 	
+      break; 		
+    }		
+  }
+
+
 } 
- 
-function onTouchEnd(e) { 
-   
-   	touches = e.getPointerList(); 
-    if (touches.length == 0) {
-			leftTouchID = -1; 
-      if (e.pointerType == PointerTypes.TOUCH) {
-        leftVector.reset(0,0); 
-      }
+
+function onPointerUp(e) { 
+
+  pointers = e.getPointerList(); 
+  if (pointers.length == 0) {
+    leftPointerID = -1; 
+    if (e.pointerType == PointerTypes.pointer) {
+      leftVector.reset(0,0); 
     }
-}
-
-function onMouseMove(event) {
-
-	mouseX = event.offsetX;
-	mouseY = event.offsetY;
+  }
 }
 
 
 function setupCanvas() {
-	
-	canvas = document.createElement( 'canvas' );
-	c = canvas.getContext( '2d' );
-	container = document.createElement( 'div' );
-	container.className = "container";
 
-	document.body.appendChild( container );
-	container.appendChild(canvas);	
+  canvas = document.createElement( 'canvas' );
+  c = canvas.getContext( '2d' );
+  container = document.createElement( 'div' );
+  container.className = "container";
 
-	resetCanvas(); 
-	
-	c.strokeStyle = "#ffffff";
-	c.lineWidth =2;	
+  document.body.appendChild( container );
+  container.appendChild(canvas);	
+
+  resetCanvas(); 
+
+  c.strokeStyle = "#ffffff";
+  c.lineWidth =2;	
 }
 
 
-</script>
-</body>
-</html>
+      </script>
+    </body>
+  </html>
