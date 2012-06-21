@@ -85,13 +85,18 @@ as part of the event payload through `evt.scale`.
 
 # Demos
 
-- [Multi-touch drawing][demo-draw]
-- [Pointer event logger][demo-pointer]
+- [Pointer plotter][demo-plot] (adapted from [Seb][seb])
+- [Video game controller][demo-vg] (adapted from [Seb][seb])
+- [Multi-touch drawing][demo-draw] (adapted from [Paul and others][paul])
 - [Gesture event logger][demo-gesture] (supports scale, longpress and doubletap)
 
 [demo-draw]: http://borismus.github.com/pointer.js/demos/draw.html
 [demo-pointer]: http://borismus.github.com/pointer.js/demos/basic-pointers.html
 [demo-gesture]: http://borismus.github.com/pointer.js/demos/basic-gestures.html
+[demo-plot]: http://borismus.github.com/pointer.js/demos/pointers.html
+[demo-vg]: http://borismus.github.com/pointer.js/demos/control.html
+[seb]: http://seb.ly/2011/04/multi-touch-game-controller-in-javascripthtml5-for-ipad/
+[paul]: http://paulirish.com/demo/multi
 
 
 # Open questions
