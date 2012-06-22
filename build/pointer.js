@@ -518,15 +518,26 @@ window.Modernizr = (function( window, document, undefined ) {
   var LONGPRESS_TIME = 600;
 
   function pointerDown(e) {
-    // Start a timer.
-    this.longPressTimer = setTimeout(function() {
-      payload = {};
-      window._createCustomEvent('gesturelongpress', e.target, payload);
-    }, LONGPRESS_TIME);
+
+    // Something went down. Clear the last press if there was one.
+    clearTimeout(this.longPressTimer);
+
+    // check that we only have one pointer down
+    if(e.getPointerList().length === 1 ) {
+
+      // Start a timer.
+      this.longPressTimer = setTimeout(function() {
+        payload = {};
+        window._createCustomEvent('gesturelongpress', e.target, payload);
+      }, LONGPRESS_TIME);
+
+    }
+    
   }
 
   function pointerMove(e) {
-    // TODO(smus): allow for small movement and still emit a longpress.
+    // TODO(smus): allow for small movement and still emit a longpress. 
+    // (IMHO only if it is not a mouse - Matthew)
     clearTimeout(this.longPressTimer);
   }
 
