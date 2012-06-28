@@ -13,7 +13,7 @@
     clearTimeout(this.longPressTimer);
 
     // check that we only have one pointer down
-    if(e.getPointerList().length === 1 ) {
+    if(e.getPointerList().length === 1) {
 
       // Start a timer.
       this.longPressTimer = setTimeout(function() {
