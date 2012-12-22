@@ -13,8 +13,8 @@ function synthesizeEvent(eventName, extras) {
 
 function mockGetPointerList() {
   return [{
-    x: 30,
-    y: 50,
+    pageX: 30,
+    pageY: 50,
     type: PointerTypes.TOUCH,
     identifier: 3
   }];
@@ -64,8 +64,8 @@ if (Modernizr.touch) {
       var pointers = e.getPointerList();
       equal(pointers.length, 2, 'two pointers');
       var second = pointers[1];
-      equal(second.x, 300, 'second x corresponds');
-      equal(second.y, 100, 'second y corresponds');
+      equal(second.pageX, 300, 'second x corresponds');
+      equal(second.pageY, 100, 'second y corresponds');
       example.removeEventListener('pointermove', arguments.callee);
     });
     stop();
@@ -122,8 +122,8 @@ if (!Modernizr.touch) {
       var pointers = e.getPointerList();
       equal(pointers.length, 1, 'expecting one pointer');
       var point = pointers[0];
-      equal(point.x, 300, 'x coordinate is right!');
-      equal(point.y, 200, 'y coordinate is right!');
+      equal(point.pageX, 300, 'x coordinate is right!');
+      equal(point.pageY, 200, 'y coordinate is right!');
       synthesizeEvent('mouseup', {pageX: 300, pageY: 200});
       example.removeEventListener('pointerdown', arguments.callee);
     });
@@ -149,15 +149,40 @@ if (!Modernizr.touch) {
 if (window.navigator.msPointerEnabled) {
   /**** MSPointer ****/
   test('MSPointerDown should cause a pointerdown event', function() {
-    ok(false, 'implement me!');
+    example.addEventListener('pointerdown', function(e) {
+      start();
+      var pointers = e.getPointerList();
+      equal(pointers.length, 1, 'expecting one pointer');
+      var point = pointers[0];
+      equal(point.pageX, 300, 'x coordinate is right!');
+      equal(point.pageY, 200, 'y coordinate is right!');
+      synthesizeEvent('mouseup', {pageX: 300, pageY: 200});
+      example.removeEventListener('pointerdown', arguments.callee);
+    });
+    stop();
+    synthesizeEvent('MSPointerDown', {pointerType: 2, pageX: 300, pageY: 200});
   });
 
   test('MSPointerMove should cause pointermove', function() {
-    ok(false, 'implement me!');
+    example.addEventListener('pointermove', function(e) {
+      start();
+      ok(true, 'pointermove fired!');
+      equal(e.pointerType, PointerTypes.TOUCH, 'pointer is a touch');
+      example.removeEventListener('pointermove', arguments.callee);
+    });
+    stop();
+    synthesizeEvent('MSPointerMove', {pointerType: 2, pageX: 300, pageY: 200});
   });
 
   test('MSPointerUp should cause pointerup', function() {
-    ok(false, 'implement me!');
+    example.addEventListener('pointerup', function(e) {
+      start();
+      ok(true, 'pointerupfired!');
+      equal(e.pointerType, PointerTypes.TOUCH, 'pointer is a touch');
+      example.removeEventListener('pointerup', arguments.callee);
+    });
+    stop();
+    synthesizeEvent('MSPointerUp', {pointerType: 2, pageX: 100, pageY: 200});
   });
 } else {
   console.log('Note: skipping MSPointer* tests');
