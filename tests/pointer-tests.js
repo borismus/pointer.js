@@ -15,6 +15,8 @@ function mockGetPointerList() {
   return [{
     pageX: 30,
     pageY: 50,
+    clientX: 30,
+    clientY: 30,
     type: PointerTypes.TOUCH,
     identifier: 3
   }];
@@ -193,17 +195,16 @@ if (window.navigator.msPointerEnabled) {
 module('gesture');
 
 test('doubletap should work based on pointer events', function() {
-  expect(1);
   example.addEventListener('gesturedoubletap', function(e) {
     start();
     ok(true, 'doubletap fired!');
     example.removeEventListener('gesturedoubletap', arguments.callee);
   });
+  stop();
   synthesizeEvent('pointerdown', {getPointerList: mockGetPointerList});
   setTimeout(function() {
     synthesizeEvent('pointerdown', {getPointerList: mockGetPointerList});
-  }, 200);
-  stop();
+  }, 100);
 });
 
 test('doubletap should not fire if the delay between pointerdowns is too large', function() {
@@ -213,15 +214,17 @@ test('doubletap should not fire if the delay between pointerdowns is too large',
     didFire = true;
     example.removeEventListener('gesturedoubletap', arguments.callee);
   });
-  synthesizeEvent('pointerdown', {getPointerList: mockGetPointerList});
+  stop();
   setTimeout(function() {
     synthesizeEvent('pointerdown', {getPointerList: mockGetPointerList});
     setTimeout(function() {
-      start();
-      equal(didFire, false, 'doubletap should not fire!')
-    }, 200);
+      synthesizeEvent('pointerdown', {getPointerList: mockGetPointerList});
+      setTimeout(function() {
+        start();
+        equal(didFire, false, 'doubletap should not fire!')
+      }, 200);
+    }, 1000);
   }, 1000);
-  stop();
 });
 
 test('longpress should work based on pointers', function() {
@@ -230,8 +233,8 @@ test('longpress should work based on pointers', function() {
     ok(true, 'longpress fired!');
     example.removeEventListener('gesturelongpress', arguments.callee);
   });
-  synthesizeEvent('pointerdown', {getPointerList: mockGetPointerList});
   stop();
+  synthesizeEvent('pointerdown', {getPointerList: mockGetPointerList});
 });
 
 test('longpress should not work if released too early', function() {
