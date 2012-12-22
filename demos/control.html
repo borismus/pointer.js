@@ -22,6 +22,8 @@ https://github.com/borismus/pointer.js.
         -webkit-tap-highlight-color: rgba(0,0,0,0); 
         -webkit-user-select: none; /* prevent copy paste, to allow, change 'none' to 'text' */
         -webkit-tap-highlight-color: rgba(0,0,0,0); 
+        -ms-touch-action: none;
+        touch-action: none;
       }
 
       body {
@@ -163,16 +165,15 @@ function draw() {
 
       c.beginPath(); 
       c.fillStyle = "white";
-      c.fillText(pointer.type + " id : "+pointer.identifier+" x:"+pointer.x+" y:"+pointer.y, pointer.x+30, pointer.y-30); 
+      c.fillText(pointer.pointerType + " id : "+pointer.identifier+" x:"+pointer.clientX+" y:"+pointer.clientY, pointer.clientX+30, pointer.clientY-30); 
 
       c.beginPath(); 
       c.strokeStyle = "red";
       c.lineWidth = "6";
-      c.arc(pointer.x, pointer.y, 40, 0, Math.PI*2, true); 
+      c.arc(pointer.clientX, pointer.clientY, 40, 0, Math.PI*2, true); 
       c.stroke();
     }
   }
-  //c.fillText("hello", 0,0); 
 
   requestAnimFrame(draw);
 }
@@ -203,10 +204,10 @@ function onPointerDown(e) {
 
   for(var i = 0; i<pointers.length; i++){
     var pointer =pointers[i]; 
-    if((leftPointerID<0) && (pointer.x<halfWidth))
+    if((leftPointerID<0) && (pointer.clientX<halfWidth))
     {
       leftPointerID = pointer.identifier; 
-      leftPointerStartPos.reset(pointer.x, pointer.y); 	
+      leftPointerStartPos.reset(pointer.clientX, pointer.clientY); 	
       leftPointerPos.copyFrom(leftPointerStartPos); 
       leftVector.reset(0,0); 
       continue; 		
@@ -226,7 +227,7 @@ function onPointerMove(e) {
     var pointer =pointers[i]; 
     if(leftPointerID == pointer.identifier)
     {
-      leftPointerPos.reset(pointer.x, pointer.y); 
+      leftPointerPos.reset(pointer.clientX, pointer.clientY); 
       leftVector.copyFrom(leftPointerPos); 
       leftVector.minusEq(leftPointerStartPos); 	
       break; 		
