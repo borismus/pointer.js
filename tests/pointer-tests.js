@@ -81,7 +81,7 @@ if (Modernizr.touch) {
 
 /**** mouse ****/
 
-if (!Modernizr.touch) {
+if (!Modernizr.touch && !window.navigator.msPointerEnabled) {
   test('mousedown should cause a pointerdown event', function() {
     // Expect a pointerdown event.
     example.addEventListener('pointerdown', function(e) {
@@ -195,6 +195,7 @@ if (window.navigator.msPointerEnabled) {
 module('gesture');
 
 test('doubletap should work based on pointer events', function() {
+  expect(1);
   example.addEventListener('gesturedoubletap', function(e) {
     start();
     ok(true, 'doubletap fired!');
