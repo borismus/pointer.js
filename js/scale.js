@@ -15,11 +15,18 @@
   }
 
   /**
+   * Calculate the center of the two pointers.
+   */
+  PointerPair.prototype.center = function() {
+    return [(this.p1.pageX + this.p2.pageX) / 2, (this.p1.pageY + this.p2.pageY) / 2];
+  };
+
+  /**
    * Calculate the distance between the two pointers.
    */
   PointerPair.prototype.span = function() {
-    var dx = this.p1.x - this.p2.x;
-    var dy = this.p1.y - this.p2.y;
+    var dx = this.p1.pageX - this.p2.pageX;
+    var dy = this.p1.pageY - this.p2.pageY;
     return Math.sqrt(dx*dx + dy*dy);
   };
 
@@ -27,7 +34,10 @@
    * Given a reference pair, calculate the scale multiplier difference.
    */
   PointerPair.prototype.scaleSince = function(referencePair) {
-    return this.span() / referencePair.span();
+    var originalSpan = this.span();
+    var referenceSpan = referencePair.span();
+    if (referenceSpan == 0) return 0;
+    else return originalSpan / referenceSpan;
   };
 
   function pointerDown(e) {
@@ -51,7 +61,9 @@
       if (Math.abs(1 - scale) > SCALE_THRESHOLD) {
         // Create the scale event as a result.
         var payload = {
-          scale: scale
+          scale: scale,
+          centerX: (e.target.scaleReferencePair.p1.clientX + e.target.scaleReferencePair.p2.clientX) / 2,
+          centerY: (e.target.scaleReferencePair.p1.clientY + e.target.scaleReferencePair.p2.clientY) / 2
         };
         window._createCustomEvent('gesturescale', e.target, payload);
       }

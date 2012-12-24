@@ -42,8 +42,8 @@ var CanvasDrawr = function(options) {
         colors  = ["red", "green", "yellow", "blue", "magenta", "orangered"],
         mycolor = colors[Math.floor(Math.random() * colors.length)];
 
-        lines[id] = { x     : this.x - offset.left, 
-          y     : this.y - offset.top, 
+        lines[id] = { x     : this.pageX - offset.left, 
+          y     : this.pageY - offset.top, 
           color : mycolor
         };
       });
@@ -57,8 +57,8 @@ var CanvasDrawr = function(options) {
 
       $.each(pointers, function(i, pointer) {
         var id = pointer.identifier || 0,
-        moveX = this.x - offset.left - lines[id].x,
-        moveY = this.y - offset.top - lines[id].y;
+        moveX = this.pageX - offset.left - lines[id].x,
+        moveY = this.pageY - offset.top - lines[id].y;
 
         var ret = self.move(id, moveX, moveY);
         lines[id].x = ret.x;
