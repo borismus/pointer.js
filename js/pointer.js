@@ -22,9 +22,6 @@
     PEN:   'pen'
   };
 
-  var msPointerList = {};
-  var msMouseDown = false;
-
   function setMouse(mouseEvent) {
     mouseEvent.target.mouseEvent = mouseEvent;
   }
@@ -50,10 +47,10 @@
         var pointer = new Pointer(touch.identifier + 2, PointerTypes.TOUCH, touch);
         pointers.push(pointer);
       }
-    } else {
-      for (var identifier in msPointerList) {
-        if (!msPointerList.hasOwnProperty(identifier)) continue;
-        var pointer = msPointerList[identifier];
+    } else if (this.msPointerList) {
+      for (var identifier in this.msPointerList) {
+        if (!this.msPointerList.hasOwnProperty(identifier)) continue;
+        var pointer = this.msPointerList[identifier];
         var pointer = new Pointer(identifier, pointer.textPointerType, pointer);
         pointers.push(pointer);
       }
@@ -147,8 +144,17 @@
   }
 
   function mouseOutHandler(event) {
-    event.preventDefault();
-    unsetMouse(event);
+    if (event.target.mouseEvent) {
+      console.log(event);
+      event.preventDefault();
+      unsetMouse(event);
+      var payload = {
+        pointerType: 'mouse',
+        getPointerList: getPointerList.bind(this),
+        originalEvent: event
+      };
+      createCustomEvent('pointerup', event.target, payload);
+    }
   }
 
   /*************** MSIE Pointer event handlers *****************/
@@ -162,9 +168,10 @@
       event.textPointerType = PointerTypes.MOUSE;
     }
     if (event.textPointerType == PointerTypes.MOUSE) {
-        msMouseDown = true;
+        event.target.msMouseDown = true;
     }
-    msPointerList[event.pointerId] = event;
+    if (!event.target.msPointerList) event.target.msPointerList = {};
+    event.target.msPointerList[event.pointerId] = event;
     var payload = {
       pointerType: event.textPointerType,
       getPointerList: getPointerList.bind(this),
@@ -182,10 +189,11 @@
     } else if (event.pointerType == 4) {
       event.textPointerType = PointerTypes.MOUSE;
     }
-    if (event.textPointerType == PointerTypes.MOUSE && !msMouseDown) {
+    if (event.textPointerType == PointerTypes.MOUSE && !event.target.msMouseDown) {
       return;
     }
-    msPointerList[event.pointerId] = event;
+    if (!event.target.msPointerList) event.target.msPointerList = {};
+    event.target.msPointerList[event.pointerId] = event;
     var payload = {
       pointerType: event.textPointerType,
       getPointerList: getPointerList.bind(this),
@@ -195,7 +203,9 @@
   }
 
   function pointerUpHandler(event) {
-    delete msPointerList[event.pointerId];
+    if (event.target.msPointerList) {
+      delete event.target.msPointerList[event.pointerId];
+    }
     if (event.pointerType == 2) {
       event.textPointerType = PointerTypes.TOUCH;
     } else if (event.pointerType == 3) {
@@ -204,7 +214,7 @@
       event.textPointerType = PointerTypes.MOUSE;
     }
     if (event.textPointerType == PointerTypes.MOUSE) {
-        msMouseDown = false;
+        event.target.msMouseDown = false;
     }
     var payload = {
       pointerType: event.textPointerType,
