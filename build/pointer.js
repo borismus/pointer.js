@@ -233,9 +233,6 @@ window.Modernizr = (function( window, document, undefined ) {
     PEN:   'pen'
   };
 
-  var msPointerList = {};
-  var msMouseDown = false;
-
   function setMouse(mouseEvent) {
     mouseEvent.target.mouseEvent = mouseEvent;
   }
@@ -261,10 +258,10 @@ window.Modernizr = (function( window, document, undefined ) {
         var pointer = new Pointer(touch.identifier + 2, PointerTypes.TOUCH, touch);
         pointers.push(pointer);
       }
-    } else {
-      for (var identifier in msPointerList) {
-        if (!msPointerList.hasOwnProperty(identifier)) continue;
-        var pointer = msPointerList[identifier];
+    } else if (this.msPointerList) {
+      for (var identifier in this.msPointerList) {
+        if (!this.msPointerList.hasOwnProperty(identifier)) continue;
+        var pointer = this.msPointerList[identifier];
         var pointer = new Pointer(identifier, pointer.textPointerType, pointer);
         pointers.push(pointer);
       }
@@ -358,8 +355,17 @@ window.Modernizr = (function( window, document, undefined ) {
   }
 
   function mouseOutHandler(event) {
-    event.preventDefault();
-    unsetMouse(event);
+    if (event.target.mouseEvent) {
+      console.log(event);
+      event.preventDefault();
+      unsetMouse(event);
+      var payload = {
+        pointerType: 'mouse',
+        getPointerList: getPointerList.bind(this),
+        originalEvent: event
+      };
+      createCustomEvent('pointerup', event.target, payload);
+    }
   }
 
   /*************** MSIE Pointer event handlers *****************/
@@ -373,9 +379,10 @@ window.Modernizr = (function( window, document, undefined ) {
       event.textPointerType = PointerTypes.MOUSE;
     }
     if (event.textPointerType == PointerTypes.MOUSE) {
-        msMouseDown = true;
+        event.target.msMouseDown = true;
     }
-    msPointerList[event.pointerId] = event;
+    if (!event.target.msPointerList) event.target.msPointerList = {};
+    event.target.msPointerList[event.pointerId] = event;
     var payload = {
       pointerType: event.textPointerType,
       getPointerList: getPointerList.bind(this),
@@ -393,10 +400,11 @@ window.Modernizr = (function( window, document, undefined ) {
     } else if (event.pointerType == 4) {
       event.textPointerType = PointerTypes.MOUSE;
     }
-    if (event.textPointerType == PointerTypes.MOUSE && !msMouseDown) {
+    if (event.textPointerType == PointerTypes.MOUSE && !event.target.msMouseDown) {
       return;
     }
-    msPointerList[event.pointerId] = event;
+    if (!event.target.msPointerList) event.target.msPointerList = {};
+    event.target.msPointerList[event.pointerId] = event;
     var payload = {
       pointerType: event.textPointerType,
       getPointerList: getPointerList.bind(this),
@@ -406,7 +414,9 @@ window.Modernizr = (function( window, document, undefined ) {
   }
 
   function pointerUpHandler(event) {
-    delete msPointerList[event.pointerId];
+    if (event.target.msPointerList) {
+      delete event.target.msPointerList[event.pointerId];
+    }
     if (event.pointerType == 2) {
       event.textPointerType = PointerTypes.TOUCH;
     } else if (event.pointerType == 3) {
@@ -415,7 +425,7 @@ window.Modernizr = (function( window, document, undefined ) {
       event.textPointerType = PointerTypes.MOUSE;
     }
     if (event.textPointerType == PointerTypes.MOUSE) {
-        msMouseDown = false;
+        event.target.msMouseDown = false;
     }
     var payload = {
       pointerType: event.textPointerType,
@@ -704,6 +714,13 @@ window.Modernizr = (function( window, document, undefined ) {
   }
 
   /**
+   * Calculate the center of the two pointers.
+   */
+  PointerPair.prototype.center = function() {
+    return [(this.p1.pageX + this.p2.pageX) / 2, (this.p1.pageY + this.p2.pageY) / 2];
+  };
+
+  /**
    * Calculate the distance between the two pointers.
    */
   PointerPair.prototype.span = function() {
@@ -738,11 +755,7 @@ window.Modernizr = (function( window, document, undefined ) {
     if (pointerList.length == 2 && e.target.scaleReferencePair) {
       var pair = new PointerPair(pointerList[0], pointerList[1]);
       // Compute the scaling value according to the difference.
-      try {
       var scale = pair.scaleSince(e.target.scaleReferencePair);
-      } catch (ex) {
-      alert(ex);
-      }
       // If the movement is drastic enough:
       if (Math.abs(1 - scale) > SCALE_THRESHOLD) {
         // Create the scale event as a result.
