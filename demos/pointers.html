@@ -34,7 +34,7 @@
 
   </head>
   <body onload = "init()">
-    <script src="../libs/Vector2.js"></script>
+    <script src="js/Vector2.js"></script>
     <script src="../build/pointer.js"></script>
     <script>
 
@@ -86,15 +86,14 @@ function draw() {
     var touch = touches[i]; 
     c.beginPath(); 
     c.fillStyle = "white";
-    c.fillText(touch.type+ " id : "+touch.identifier+" x:"+touch.x+" y:"+touch.y, touch.x+30, touch.y-30); 
+    c.fillText(touch.pointerType+ " id : "+touch.identifier+" x:"+touch.clientX+" y:"+touch.clientY, touch.clientX+30, touch.clientY-30); 
 
     c.beginPath(); 
     c.strokeStyle = "cyan";
     c.lineWidth = "6";
-    c.arc(touch.x, touch.y, 40, 0, Math.PI*2, true); 
+    c.arc(touch.clientX, touch.clientY, 40, 0, Math.PI*2, true); 
     c.stroke();
   }
-  //c.fillText("hello", 0,0); 
 
   requestAnimFrame(draw);
 }

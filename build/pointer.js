@@ -209,25 +209,28 @@ window.Modernizr = (function( window, document, undefined ) {
 
 })(this, this.document);
 ;
-
 (function(exports) {
+  var MOUSE_ID = 1;
 
-  // TODO(smus): Come up with a better solution for this. This is bad because
-  // it might conflict with a touch ID. However, giving negative IDs is also
-  // bad because of code that makes assumptions about touch identifiers being
-  // positive integers.
-  var MOUSE_ID = 31337;
-
-  function Pointer(x, y, type, identifier) {
-    this.x = x;
-    this.y = y;
-    this.type = type;
+  function Pointer(identifier, type, event) {
+    this.screenX = event.screenX || 0;
+    this.screenY = event.screenY || 0;
+    this.pageX = event.pageX || 0;
+    this.pageY = event.pageY || 0;
+    this.clientX = event.clientX || 0;
+    this.clientY = event.clientY || 0;
+    this.tiltX = event.tiltX || 0;
+    this.tiltY = event.tiltY || 0;
+    this.pressure = event.pressure || 0.0;
+    this.hwTimestamp = event.hwTimestamp || 0;
+    this.pointerType = type;
     this.identifier = identifier;
   }
 
   var PointerTypes = {
     TOUCH: 'touch',
-    MOUSE: 'mouse'
+    MOUSE: 'mouse',
+    PEN:   'pen'
   };
 
   function setMouse(mouseEvent) {
@@ -251,14 +254,20 @@ window.Modernizr = (function( window, document, undefined ) {
     if (this.touchList) {
       for (var i = 0; i < this.touchList.length; i++) {
         var touch = this.touchList[i];
-        var pointer = new Pointer(touch.pageX, touch.pageY,
-                                  PointerTypes.TOUCH, touch.identifier);
+        // Add 2 to avoid clashing with the mouse identifier.
+        var pointer = new Pointer(touch.identifier + 2, PointerTypes.TOUCH, touch);
+        pointers.push(pointer);
+      }
+    } else if (this.msPointerList) {
+      for (var identifier in this.msPointerList) {
+        if (!this.msPointerList.hasOwnProperty(identifier)) continue;
+        var pointer = this.msPointerList[identifier];
+        var pointer = new Pointer(identifier, pointer.textPointerType, pointer);
         pointers.push(pointer);
       }
     }
     if (this.mouseEvent) {
-      pointers.push(new Pointer(this.mouseEvent.pageX, this.mouseEvent.pageY,
-                                  PointerTypes.MOUSE, MOUSE_ID));
+      pointers.push(new Pointer(MOUSE_ID, PointerTypes.MOUSE, this.mouseEvent));
     }
     return pointers;
   }
@@ -346,22 +355,84 @@ window.Modernizr = (function( window, document, undefined ) {
   }
 
   function mouseOutHandler(event) {
-    event.preventDefault();
-    unsetMouse(event);
+    if (event.target.mouseEvent) {
+      console.log(event);
+      event.preventDefault();
+      unsetMouse(event);
+      var payload = {
+        pointerType: 'mouse',
+        getPointerList: getPointerList.bind(this),
+        originalEvent: event
+      };
+      createCustomEvent('pointerup', event.target, payload);
+    }
   }
 
   /*************** MSIE Pointer event handlers *****************/
 
   function pointerDownHandler(event) {
-    log('pointerdown');
+    if (event.pointerType == 2) {
+      event.textPointerType = PointerTypes.TOUCH;
+    } else if (event.pointerType == 3) {
+      event.textPointerType = PointerTypes.PEN;
+    } else if (event.pointerType == 4) {
+      event.textPointerType = PointerTypes.MOUSE;
+    }
+    if (event.textPointerType == PointerTypes.MOUSE) {
+        event.target.msMouseDown = true;
+    }
+    if (!event.target.msPointerList) event.target.msPointerList = {};
+    event.target.msPointerList[event.pointerId] = event;
+    var payload = {
+      pointerType: event.textPointerType,
+      getPointerList: getPointerList.bind(this),
+      originalEvent: event
+    };
+
+    createCustomEvent('pointerdown', event.target, payload);
   }
 
   function pointerMoveHandler(event) {
-    log('pointermove');
+    if (event.pointerType == 2) {
+      event.textPointerType = PointerTypes.TOUCH;
+    } else if (event.pointerType == 3) {
+      event.textPointerType = PointerTypes.PEN;
+    } else if (event.pointerType == 4) {
+      event.textPointerType = PointerTypes.MOUSE;
+    }
+    if (event.textPointerType == PointerTypes.MOUSE && !event.target.msMouseDown) {
+      return;
+    }
+    if (!event.target.msPointerList) event.target.msPointerList = {};
+    event.target.msPointerList[event.pointerId] = event;
+    var payload = {
+      pointerType: event.textPointerType,
+      getPointerList: getPointerList.bind(this),
+      originalEvent: event
+    };
+    createCustomEvent('pointermove', event.target, payload);
   }
 
   function pointerUpHandler(event) {
-    log('pointerup');
+    if (event.target.msPointerList) {
+      delete event.target.msPointerList[event.pointerId];
+    }
+    if (event.pointerType == 2) {
+      event.textPointerType = PointerTypes.TOUCH;
+    } else if (event.pointerType == 3) {
+      event.textPointerType = PointerTypes.PEN;
+    } else if (event.pointerType == 4) {
+      event.textPointerType = PointerTypes.MOUSE;
+    }
+    if (event.textPointerType == PointerTypes.MOUSE) {
+        event.target.msMouseDown = false;
+    }
+    var payload = {
+      pointerType: event.textPointerType,
+      getPointerList: getPointerList.bind(this),
+      originalEvent: event
+    };
+    createCustomEvent('pointerup', event.target, payload);
   }
 
   /**
@@ -371,15 +442,20 @@ window.Modernizr = (function( window, document, undefined ) {
   function emitPointers(el) {
     if (!el.isPointerEmitter) {
       // Latch on to all relevant events for this element.
-      if (isTouch()) {
-        el.addEventListener('touchstart', touchStartHandler);
-        el.addEventListener('touchmove', touchMoveHandler);
-        el.addEventListener('touchend', touchEndHandler);
-      } else if (isPointer()) {
+      if (isPointer()) {
+        el.addEventListener('pointerdown', pointerDownHandler);
+        el.addEventListener('pointermove', pointerMoveHandler);
+        el.addEventListener('pointerup', pointerUpHandler);
+      } else if (isMSPointer()) {
         el.addEventListener('MSPointerDown', pointerDownHandler);
         el.addEventListener('MSPointerMove', pointerMoveHandler);
         el.addEventListener('MSPointerUp', pointerUpHandler);
       } else {
+        if (isTouch()) {
+          el.addEventListener('touchstart', touchStartHandler);
+          el.addEventListener('touchmove', touchMoveHandler);
+          el.addEventListener('touchend', touchEndHandler);
+        }
         el.addEventListener('mousedown', mouseDownHandler);
         el.addEventListener('mousemove', mouseMoveHandler);
         el.addEventListener('mouseup', mouseUpHandler);
@@ -403,10 +479,16 @@ window.Modernizr = (function( window, document, undefined ) {
    * @return {Boolean} Returns true iff this user agent supports MSIE pointer
    * events.
    */
+  function isMSPointer() {
+    return window.navigator.msPointerEnabled;
+  }
+
+   /**
+   * @return {Boolean} Returns true iff this user agent supports pointer
+   * events.
+   */
   function isPointer() {
-    return false;
-    // TODO(smus): Implement support for pointer events.
-    // return window.navigator.msPointerEnabled;
+    return window.navigator.pointerEnabled;
   }
 
   /**
@@ -446,9 +528,7 @@ window.Modernizr = (function( window, document, undefined ) {
   exports._createCustomEvent = createCustomEvent;
   exports._augmentAddEventListener = augmentAddEventListener;
   exports.PointerTypes = PointerTypes;
-
 })(window);
-
 (function(exports) {
 
   function synthesizeGestureEvents(type, listener, useCapture) {
@@ -477,7 +557,6 @@ window.Modernizr = (function( window, document, undefined ) {
   exports.Gesture._gestureHandlers = exports.Gesture._gestureHandlers || {};
 
 })(window);
-
 /**
  * Gesture recognizer for the `doubletap` gesture.
  *
@@ -485,15 +564,38 @@ window.Modernizr = (function( window, document, undefined ) {
  */
 (function(exports) {
   var DOUBLETAP_TIME = 300;
+  var WIGGLE_THRESHOLD = 10;
+
+  /**
+   * A simple object for storing the position of a pointer.
+   */
+  function PointerPosition(pointer) {
+    this.x = pointer.clientX;
+    this.y = pointer.clientY;
+  }
+
+  /**
+   * calculate the squared distance of the given pointer from this 
+   * PointerPosition's pointer
+   */
+  PointerPosition.prototype.calculateSquaredDistance = function(pointer) {
+    var dx = this.x - pointer.clientX;
+    var dy = this.y - pointer.clientY;
+    return dx*dx + dy*dy;
+  };
 
   function pointerDown(e) {
+    var pointers = e.getPointerList();
+    if (pointers.length != 1) return;
     var now = new Date();
-    if (now - this.lastDownTime < DOUBLETAP_TIME) {
+    if (now - this.lastDownTime < DOUBLETAP_TIME && this.lastPosition && this.lastPosition.calculateSquaredDistance(pointers[0]) < WIGGLE_THRESHOLD * WIGGLE_THRESHOLD) {
       this.lastDownTime = 0;
+      this.lastPosition = null;
       var payload = {
       };
       window._createCustomEvent('gesturedoubletap', e.target, payload);
     }
+    this.lastPosition = new PointerPosition(pointers[0]);
     this.lastDownTime = now;
   }
 
@@ -507,7 +609,6 @@ window.Modernizr = (function( window, document, undefined ) {
   exports.Gesture._gestureHandlers.gesturedoubletap = emitDoubleTaps;
 
 })(window);
-
 /**
  * Gesture recognizer for the `longpress` gesture.
  *
@@ -522,18 +623,18 @@ window.Modernizr = (function( window, document, undefined ) {
    * A simple object for storing the position of a pointer.
    */
   function PointerPosition(pointer) {
-    this.x = pointer.x;
-    this.y = pointer.y;
+    this.x = pointer.clientX;
+    this.y = pointer.clientY;
   }
 
   /**
-   * calculate the distance of the given pointer from this 
+   * calculate the squared distance of the given pointer from this 
    * PointerPosition's pointer
    */
-  PointerPosition.prototype.calculateDistance = function(pointer) {
-    var dx = this.x - pointer.x;
-    var dy = this.y - pointer.y;
-    return Math.sqrt(dx*dx + dy*dy);
+  PointerPosition.prototype.calculateSquaredDistance = function(pointer) {
+    var dx = this.x - pointer.clientX;
+    var dy = this.y - pointer.clientY;
+    return dx*dx + dy*dy;
   };
 
 
@@ -542,11 +643,13 @@ window.Modernizr = (function( window, document, undefined ) {
     // Something went down. Clear the last press if there was one.
     clearTimeout(this.longPressTimer);
 
+    var pointers = e.getPointerList();
+
     // check that we only have one pointer down
-    if(e.getPointerList().length === 1) {
+    if(pointers.length === 1) {
 
       // cache the position of the pointer on the target
-      e.target.longpressInitPosition = new PointerPosition(e.getPointerList()[0]);
+      e.target.longpressInitPosition = new PointerPosition(pointers[0]);
 
       // Start a timer.
       this.longPressTimer = setTimeout(function() {
@@ -559,18 +662,19 @@ window.Modernizr = (function( window, document, undefined ) {
   }
 
   function pointerMove(e) {
+    var pointers = e.getPointerList();
     
     if(e.pointerType === PointerTypes.MOUSE) {
       // if the pointer is a mouse we cancel the longpress 
       // as soon as it starts wiggling around
       clearTimeout(this.longPressTimer);
     }
-    else if(e.getPointerList().length === 1) {
+    else if(pointers.length === 1) {
       // but if the pointer is something else we allow a 
       // for a bit of smudge space
       var pos = e.target.longpressInitPosition;
       
-      if(pos && pos.calculateDistance(e.getPointerList()[0]) > WIGGLE_THRESHOLD) {
+      if(pos && pos.calculateSquaredDistance(pointers[0]) > WIGGLE_THRESHOLD * WIGGLE_THRESHOLD) {
         clearTimeout(this.longPressTimer);
       }
     }
@@ -593,7 +697,6 @@ window.Modernizr = (function( window, document, undefined ) {
   exports.Gesture._gestureHandlers.gesturelongpress = emitLongPresses;
 
 })(window);
-
 /**
  * Gesture recognizer for the `scale` gesture.
  *
@@ -611,11 +714,18 @@ window.Modernizr = (function( window, document, undefined ) {
   }
 
   /**
+   * Calculate the center of the two pointers.
+   */
+  PointerPair.prototype.center = function() {
+    return [(this.p1.pageX + this.p2.pageX) / 2, (this.p1.pageY + this.p2.pageY) / 2];
+  };
+
+  /**
    * Calculate the distance between the two pointers.
    */
   PointerPair.prototype.span = function() {
-    var dx = this.p1.x - this.p2.x;
-    var dy = this.p1.y - this.p2.y;
+    var dx = this.p1.pageX - this.p2.pageX;
+    var dy = this.p1.pageY - this.p2.pageY;
     return Math.sqrt(dx*dx + dy*dy);
   };
 
@@ -623,7 +733,10 @@ window.Modernizr = (function( window, document, undefined ) {
    * Given a reference pair, calculate the scale multiplier difference.
    */
   PointerPair.prototype.scaleSince = function(referencePair) {
-    return this.span() / referencePair.span();
+    var originalSpan = this.span();
+    var referenceSpan = referencePair.span();
+    if (referenceSpan == 0) return 0;
+    else return originalSpan / referenceSpan;
   };
 
   function pointerDown(e) {
@@ -647,7 +760,9 @@ window.Modernizr = (function( window, document, undefined ) {
       if (Math.abs(1 - scale) > SCALE_THRESHOLD) {
         // Create the scale event as a result.
         var payload = {
-          scale: scale
+          scale: scale,
+          centerX: (e.target.scaleReferencePair.p1.clientX + e.target.scaleReferencePair.p2.clientX) / 2,
+          centerY: (e.target.scaleReferencePair.p1.clientY + e.target.scaleReferencePair.p2.clientY) / 2
         };
         window._createCustomEvent('gesturescale', e.target, payload);
       }

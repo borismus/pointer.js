@@ -45,7 +45,7 @@ Events: `pointerdown, pointermove, pointerup`
 
 Event payload class: `originalEvent, pointerType, getPointerList()`
 
-Pointer class: `x, y, type`
+Pointer class: `clientX, clientY, screenX, screenY, pageX, pageY, tiltX, tiltY, pressure, hwTimestamp, pointerType, identifier`
 
 ## Gesture events
 

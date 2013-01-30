@@ -1,21 +1,25 @@
 (function(exports) {
+  var MOUSE_ID = 1;
 
-  // TODO(smus): Come up with a better solution for this. This is bad because
-  // it might conflict with a touch ID. However, giving negative IDs is also
-  // bad because of code that makes assumptions about touch identifiers being
-  // positive integers.
-  var MOUSE_ID = 31337;
-
-  function Pointer(x, y, type, identifier) {
-    this.x = x;
-    this.y = y;
-    this.type = type;
+  function Pointer(identifier, type, event) {
+    this.screenX = event.screenX || 0;
+    this.screenY = event.screenY || 0;
+    this.pageX = event.pageX || 0;
+    this.pageY = event.pageY || 0;
+    this.clientX = event.clientX || 0;
+    this.clientY = event.clientY || 0;
+    this.tiltX = event.tiltX || 0;
+    this.tiltY = event.tiltY || 0;
+    this.pressure = event.pressure || 0.0;
+    this.hwTimestamp = event.hwTimestamp || 0;
+    this.pointerType = type;
     this.identifier = identifier;
   }
 
   var PointerTypes = {
     TOUCH: 'touch',
-    MOUSE: 'mouse'
+    MOUSE: 'mouse',
+    PEN:   'pen'
   };
 
   function setMouse(mouseEvent) {
@@ -39,14 +43,20 @@
     if (this.touchList) {
       for (var i = 0; i < this.touchList.length; i++) {
         var touch = this.touchList[i];
-        var pointer = new Pointer(touch.pageX, touch.pageY,
-                                  PointerTypes.TOUCH, touch.identifier);
+        // Add 2 to avoid clashing with the mouse identifier.
+        var pointer = new Pointer(touch.identifier + 2, PointerTypes.TOUCH, touch);
+        pointers.push(pointer);
+      }
+    } else if (this.msPointerList) {
+      for (var identifier in this.msPointerList) {
+        if (!this.msPointerList.hasOwnProperty(identifier)) continue;
+        var pointer = this.msPointerList[identifier];
+        var pointer = new Pointer(identifier, pointer.textPointerType, pointer);
         pointers.push(pointer);
       }
     }
     if (this.mouseEvent) {
-      pointers.push(new Pointer(this.mouseEvent.pageX, this.mouseEvent.pageY,
-                                  PointerTypes.MOUSE, MOUSE_ID));
+      pointers.push(new Pointer(MOUSE_ID, PointerTypes.MOUSE, this.mouseEvent));
     }
     return pointers;
   }
@@ -134,22 +144,84 @@
   }
 
   function mouseOutHandler(event) {
-    event.preventDefault();
-    unsetMouse(event);
+    if (event.target.mouseEvent) {
+      console.log(event);
+      event.preventDefault();
+      unsetMouse(event);
+      var payload = {
+        pointerType: 'mouse',
+        getPointerList: getPointerList.bind(this),
+        originalEvent: event
+      };
+      createCustomEvent('pointerup', event.target, payload);
+    }
   }
 
   /*************** MSIE Pointer event handlers *****************/
 
   function pointerDownHandler(event) {
-    log('pointerdown');
+    if (event.pointerType == 2) {
+      event.textPointerType = PointerTypes.TOUCH;
+    } else if (event.pointerType == 3) {
+      event.textPointerType = PointerTypes.PEN;
+    } else if (event.pointerType == 4) {
+      event.textPointerType = PointerTypes.MOUSE;
+    }
+    if (event.textPointerType == PointerTypes.MOUSE) {
+        event.target.msMouseDown = true;
+    }
+    if (!event.target.msPointerList) event.target.msPointerList = {};
+    event.target.msPointerList[event.pointerId] = event;
+    var payload = {
+      pointerType: event.textPointerType,
+      getPointerList: getPointerList.bind(this),
+      originalEvent: event
+    };
+
+    createCustomEvent('pointerdown', event.target, payload);
   }
 
   function pointerMoveHandler(event) {
-    log('pointermove');
+    if (event.pointerType == 2) {
+      event.textPointerType = PointerTypes.TOUCH;
+    } else if (event.pointerType == 3) {
+      event.textPointerType = PointerTypes.PEN;
+    } else if (event.pointerType == 4) {
+      event.textPointerType = PointerTypes.MOUSE;
+    }
+    if (event.textPointerType == PointerTypes.MOUSE && !event.target.msMouseDown) {
+      return;
+    }
+    if (!event.target.msPointerList) event.target.msPointerList = {};
+    event.target.msPointerList[event.pointerId] = event;
+    var payload = {
+      pointerType: event.textPointerType,
+      getPointerList: getPointerList.bind(this),
+      originalEvent: event
+    };
+    createCustomEvent('pointermove', event.target, payload);
   }
 
   function pointerUpHandler(event) {
-    log('pointerup');
+    if (event.target.msPointerList) {
+      delete event.target.msPointerList[event.pointerId];
+    }
+    if (event.pointerType == 2) {
+      event.textPointerType = PointerTypes.TOUCH;
+    } else if (event.pointerType == 3) {
+      event.textPointerType = PointerTypes.PEN;
+    } else if (event.pointerType == 4) {
+      event.textPointerType = PointerTypes.MOUSE;
+    }
+    if (event.textPointerType == PointerTypes.MOUSE) {
+        event.target.msMouseDown = false;
+    }
+    var payload = {
+      pointerType: event.textPointerType,
+      getPointerList: getPointerList.bind(this),
+      originalEvent: event
+    };
+    createCustomEvent('pointerup', event.target, payload);
   }
 
   /**
@@ -159,15 +231,20 @@
   function emitPointers(el) {
     if (!el.isPointerEmitter) {
       // Latch on to all relevant events for this element.
-      if (isTouch()) {
-        el.addEventListener('touchstart', touchStartHandler);
-        el.addEventListener('touchmove', touchMoveHandler);
-        el.addEventListener('touchend', touchEndHandler);
-      } else if (isPointer()) {
+      if (isPointer()) {
+        el.addEventListener('pointerdown', pointerDownHandler);
+        el.addEventListener('pointermove', pointerMoveHandler);
+        el.addEventListener('pointerup', pointerUpHandler);
+      } else if (isMSPointer()) {
         el.addEventListener('MSPointerDown', pointerDownHandler);
         el.addEventListener('MSPointerMove', pointerMoveHandler);
         el.addEventListener('MSPointerUp', pointerUpHandler);
       } else {
+        if (isTouch()) {
+          el.addEventListener('touchstart', touchStartHandler);
+          el.addEventListener('touchmove', touchMoveHandler);
+          el.addEventListener('touchend', touchEndHandler);
+        }
         el.addEventListener('mousedown', mouseDownHandler);
         el.addEventListener('mousemove', mouseMoveHandler);
         el.addEventListener('mouseup', mouseUpHandler);
@@ -191,10 +268,16 @@
    * @return {Boolean} Returns true iff this user agent supports MSIE pointer
    * events.
    */
+  function isMSPointer() {
+    return window.navigator.msPointerEnabled;
+  }
+
+   /**
+   * @return {Boolean} Returns true iff this user agent supports pointer
+   * events.
+   */
   function isPointer() {
-    return false;
-    // TODO(smus): Implement support for pointer events.
-    // return window.navigator.msPointerEnabled;
+    return window.navigator.pointerEnabled;
   }
 
   /**
@@ -234,5 +317,4 @@
   exports._createCustomEvent = createCustomEvent;
   exports._augmentAddEventListener = augmentAddEventListener;
   exports.PointerTypes = PointerTypes;
-
 })(window);
