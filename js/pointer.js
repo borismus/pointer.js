@@ -51,7 +51,7 @@
       for (var identifier in this.msPointerList) {
         if (!this.msPointerList.hasOwnProperty(identifier)) continue;
         var pointer = this.msPointerList[identifier];
-        var pointer = new Pointer(identifier, pointer.textPointerType, pointer);
+        pointer = new Pointer(identifier, pointer.textPointerType, pointer);
         pointers.push(pointer);
       }
     }

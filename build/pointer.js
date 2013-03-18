@@ -209,6 +209,7 @@ window.Modernizr = (function( window, document, undefined ) {
 
 })(this, this.document);
 ;
+
 (function(exports) {
   var MOUSE_ID = 1;
 
@@ -262,7 +263,7 @@ window.Modernizr = (function( window, document, undefined ) {
       for (var identifier in this.msPointerList) {
         if (!this.msPointerList.hasOwnProperty(identifier)) continue;
         var pointer = this.msPointerList[identifier];
-        var pointer = new Pointer(identifier, pointer.textPointerType, pointer);
+        pointer = new Pointer(identifier, pointer.textPointerType, pointer);
         pointers.push(pointer);
       }
     }
@@ -529,6 +530,7 @@ window.Modernizr = (function( window, document, undefined ) {
   exports._augmentAddEventListener = augmentAddEventListener;
   exports.PointerTypes = PointerTypes;
 })(window);
+
 (function(exports) {
 
   function synthesizeGestureEvents(type, listener, useCapture) {
@@ -557,6 +559,7 @@ window.Modernizr = (function( window, document, undefined ) {
   exports.Gesture._gestureHandlers = exports.Gesture._gestureHandlers || {};
 
 })(window);
+
 /**
  * Gesture recognizer for the `doubletap` gesture.
  *
@@ -609,6 +612,7 @@ window.Modernizr = (function( window, document, undefined ) {
   exports.Gesture._gestureHandlers.gesturedoubletap = emitDoubleTaps;
 
 })(window);
+
 /**
  * Gesture recognizer for the `longpress` gesture.
  *
@@ -697,6 +701,7 @@ window.Modernizr = (function( window, document, undefined ) {
   exports.Gesture._gestureHandlers.gesturelongpress = emitLongPresses;
 
 })(window);
+
 /**
  * Gesture recognizer for the `scale` gesture.
  *
