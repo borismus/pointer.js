@@ -209,6 +209,7 @@ window.Modernizr = (function( window, document, undefined ) {
 
 })(this, this.document);
 ;
+
 (function(exports) {
   var MOUSE_ID = 1;
 
@@ -251,18 +252,19 @@ window.Modernizr = (function( window, document, undefined ) {
   function getPointerList() {
     // Note: "this" is the element.
     var pointers = [];
+    var pointer;
     if (this.touchList) {
       for (var i = 0; i < this.touchList.length; i++) {
         var touch = this.touchList[i];
         // Add 2 to avoid clashing with the mouse identifier.
-        var pointer = new Pointer(touch.identifier + 2, PointerTypes.TOUCH, touch);
+        pointer = new Pointer(touch.identifier + 2, PointerTypes.TOUCH, touch);
         pointers.push(pointer);
       }
     } else if (this.msPointerList) {
       for (var identifier in this.msPointerList) {
         if (!this.msPointerList.hasOwnProperty(identifier)) continue;
-        var pointer = this.msPointerList[identifier];
-        var pointer = new Pointer(identifier, pointer.textPointerType, pointer);
+        pointer = this.msPointerList[identifier];
+        pointer = new Pointer(identifier, pointer.textPointerType, pointer);
         pointers.push(pointer);
       }
     }
@@ -529,6 +531,7 @@ window.Modernizr = (function( window, document, undefined ) {
   exports._augmentAddEventListener = augmentAddEventListener;
   exports.PointerTypes = PointerTypes;
 })(window);
+
 (function(exports) {
 
   function synthesizeGestureEvents(type, listener, useCapture) {
@@ -557,6 +560,7 @@ window.Modernizr = (function( window, document, undefined ) {
   exports.Gesture._gestureHandlers = exports.Gesture._gestureHandlers || {};
 
 })(window);
+
 /**
  * Gesture recognizer for the `doubletap` gesture.
  *
@@ -609,6 +613,7 @@ window.Modernizr = (function( window, document, undefined ) {
   exports.Gesture._gestureHandlers.gesturedoubletap = emitDoubleTaps;
 
 })(window);
+
 /**
  * Gesture recognizer for the `longpress` gesture.
  *
@@ -697,6 +702,7 @@ window.Modernizr = (function( window, document, undefined ) {
   exports.Gesture._gestureHandlers.gesturelongpress = emitLongPresses;
 
 })(window);
+
 /**
  * Gesture recognizer for the `scale` gesture.
  *
@@ -735,7 +741,9 @@ window.Modernizr = (function( window, document, undefined ) {
   PointerPair.prototype.scaleSince = function(referencePair) {
     var originalSpan = this.span();
     var referenceSpan = referencePair.span();
-    if (referenceSpan == 0) return 0;
+    if (referenceSpan === 0) {
+      return 0;
+    }
     else return originalSpan / referenceSpan;
   };
 

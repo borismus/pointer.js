@@ -36,7 +36,9 @@
   PointerPair.prototype.scaleSince = function(referencePair) {
     var originalSpan = this.span();
     var referenceSpan = referencePair.span();
-    if (referenceSpan == 0) return 0;
+    if (referenceSpan === 0) {
+      return 0;
+    }
     else return originalSpan / referenceSpan;
   };
 
