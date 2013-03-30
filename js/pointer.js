@@ -40,17 +40,18 @@
   function getPointerList() {
     // Note: "this" is the element.
     var pointers = [];
+    var pointer;
     if (this.touchList) {
       for (var i = 0; i < this.touchList.length; i++) {
         var touch = this.touchList[i];
         // Add 2 to avoid clashing with the mouse identifier.
-        var pointer = new Pointer(touch.identifier + 2, PointerTypes.TOUCH, touch);
+        pointer = new Pointer(touch.identifier + 2, PointerTypes.TOUCH, touch);
         pointers.push(pointer);
       }
     } else if (this.msPointerList) {
       for (var identifier in this.msPointerList) {
         if (!this.msPointerList.hasOwnProperty(identifier)) continue;
-        var pointer = this.msPointerList[identifier];
+        pointer = this.msPointerList[identifier];
         pointer = new Pointer(identifier, pointer.textPointerType, pointer);
         pointers.push(pointer);
       }
