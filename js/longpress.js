@@ -30,6 +30,7 @@
   function pointerDown(e) {
 
     // Something went down. Clear the last press if there was one.
+
     clearTimeout(this.longPressTimer);
 
     var pointers = e.getPointerList();
@@ -42,7 +43,10 @@
 
       // Start a timer.
       this.longPressTimer = setTimeout(function() {
-        var payload = {};
+        var payload = {
+          pageX: pointers[0].pageX,
+          pageY: pointers[0].pageY
+        };
         window._createCustomEvent('gesturelongpress', e.target, payload);
       }, LONGPRESS_TIME);
 
