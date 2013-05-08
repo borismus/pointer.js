@@ -3,11 +3,12 @@ module.exports = function( grunt ) {
     jshint: {
       options: {
         'undef': true,
-        'unused': true,
         'browser': true,
         'globals': {
           'console': true,
-          'Gesture': true
+          'Gesture': true,
+          'PointerTypes': true,
+          'Modernizr': true
         }
       },
       all: ['js/*.js']

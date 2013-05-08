@@ -42,7 +42,7 @@
 
       // Start a timer.
       this.longPressTimer = setTimeout(function() {
-        payload = {};
+        var payload = {};
         window._createCustomEvent('gesturelongpress', e.target, payload);
       }, LONGPRESS_TIME);
 
