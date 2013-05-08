@@ -33,10 +33,17 @@ module.exports = function( grunt ) {
           'build/pointer.min.js': ['build/pointer.js']
         }
       }
+    },
+    watch: {
+      concat: {
+        files: ['js/**/*.js'],
+        tasks: 'concat'
+      }
     }
   });
   grunt.loadNpmTasks( 'grunt-contrib-concat' );
   grunt.loadNpmTasks( 'grunt-contrib-uglify' );
   grunt.loadNpmTasks( 'grunt-contrib-jshint' );
+  grunt.loadNpmTasks( 'grunt-contrib-watch' );
   grunt.registerTask( 'default', [ 'jshint', 'concat', 'uglify' ] );
 }
