@@ -29,7 +29,6 @@
     var pointers = e.getPointerList();
     if (pointers.length != 1) return;
     var now = new Date().getTime();
-    console.log(now - this.lastDownTime)
     if (now - this.lastDownTime < DOUBLETAP_TIME && this.lastPosition && this.lastPosition.calculateSquaredDistance(pointers[0]) < WIGGLE_THRESHOLD * WIGGLE_THRESHOLD) {
       this.lastDownTime = 0;
       this.lastPosition = null;
@@ -48,7 +47,6 @@
    * Make the specified element create gesturetap events.
    */
   function emitDoubleTaps(el) {
-    eee = el
     el.addEventListener('pointerdown', pointerDown);
   }
 

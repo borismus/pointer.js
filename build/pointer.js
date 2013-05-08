@@ -323,7 +323,6 @@ window.Modernizr = (function( window, document, undefined ) {
   /*************** Touch event handlers *****************/
 
   function touchStartHandler(event) {
-    console.log('touchstart');
     event.preventDefault();
     setTouch(event);
     var payload = {
@@ -358,7 +357,6 @@ window.Modernizr = (function( window, document, undefined ) {
 
   function mouseOutHandler(event) {
     if (event.currentTarget.mouseEvent) {
-      console.log(event);
       event.preventDefault();
       unsetMouse(event);
       var payload = {
@@ -591,16 +589,19 @@ window.Modernizr = (function( window, document, undefined ) {
   function pointerDown(e) {
     var pointers = e.getPointerList();
     if (pointers.length != 1) return;
-    var now = new Date();
+    var now = new Date().getTime();
     if (now - this.lastDownTime < DOUBLETAP_TIME && this.lastPosition && this.lastPosition.calculateSquaredDistance(pointers[0]) < WIGGLE_THRESHOLD * WIGGLE_THRESHOLD) {
       this.lastDownTime = 0;
       this.lastPosition = null;
       var payload = {
+        pageX: pointers[0].pageX,
+        pageY: pointers[0].pageY
       };
       window._createCustomEvent('gesturedoubletap', e.target, payload);
+    } else {
+      this.lastPosition = new PointerPosition(pointers[0]);
+      this.lastDownTime = now;
     }
-    this.lastPosition = new PointerPosition(pointers[0]);
-    this.lastDownTime = now;
   }
 
   /**
@@ -646,6 +647,7 @@ window.Modernizr = (function( window, document, undefined ) {
   function pointerDown(e) {
 
     // Something went down. Clear the last press if there was one.
+
     clearTimeout(this.longPressTimer);
 
     var pointers = e.getPointerList();
@@ -658,7 +660,10 @@ window.Modernizr = (function( window, document, undefined ) {
 
       // Start a timer.
       this.longPressTimer = setTimeout(function() {
-        var payload = {};
+        var payload = {
+          pageX: pointers[0].pageX,
+          pageY: pointers[0].pageY
+        };
         window._createCustomEvent('gesturelongpress', e.target, payload);
       }, LONGPRESS_TIME);
 
