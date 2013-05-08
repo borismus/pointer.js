@@ -235,15 +235,15 @@ window.Modernizr = (function( window, document, undefined ) {
   };
 
   function setMouse(mouseEvent) {
-    mouseEvent.target.mouseEvent = mouseEvent;
+    mouseEvent.currentTarget.mouseEvent = mouseEvent;
   }
 
   function unsetMouse(mouseEvent) {
-    mouseEvent.target.mouseEvent = null;
+    mouseEvent.currentTarget.mouseEvent = null;
   }
 
   function setTouch(touchEvent) {
-    touchEvent.target.touchList = touchEvent.targetTouches;
+    touchEvent.currentTarget.touchList = touchEvent.targetTouches;
   }
 
   /**
@@ -293,12 +293,12 @@ window.Modernizr = (function( window, document, undefined ) {
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointerdown', event.target, payload);
+    createCustomEvent('pointerdown', event.currentTarget, payload);
   }
 
   function mouseMoveHandler(event) {
     event.preventDefault();
-    if (event.target.mouseEvent) {
+    if (event.currentTarget.mouseEvent) {
       setMouse(event);
     }
     var payload = {
@@ -306,7 +306,7 @@ window.Modernizr = (function( window, document, undefined ) {
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointermove', event.target, payload);
+    createCustomEvent('pointermove', event.currentTarget, payload);
   }
 
   function mouseUpHandler(event) {
@@ -317,7 +317,7 @@ window.Modernizr = (function( window, document, undefined ) {
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointerup', event.target, payload);
+    createCustomEvent('pointerup', event.currentTarget, payload);
   }
 
   /*************** Touch event handlers *****************/
@@ -331,7 +331,7 @@ window.Modernizr = (function( window, document, undefined ) {
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointerdown', event.target, payload);
+    createCustomEvent('pointerdown', event.currentTarget, payload);
   }
 
   function touchMoveHandler(event) {
@@ -342,7 +342,7 @@ window.Modernizr = (function( window, document, undefined ) {
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointermove', event.target, payload);
+    createCustomEvent('pointermove', event.currentTarget, payload);
   }
 
   function touchEndHandler(event) {
@@ -353,11 +353,11 @@ window.Modernizr = (function( window, document, undefined ) {
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointerup', event.target, payload);
+    createCustomEvent('pointerup', event.currentTarget, payload);
   }
 
   function mouseOutHandler(event) {
-    if (event.target.mouseEvent) {
+    if (event.currentTarget.mouseEvent) {
       console.log(event);
       event.preventDefault();
       unsetMouse(event);
@@ -366,7 +366,7 @@ window.Modernizr = (function( window, document, undefined ) {
         getPointerList: getPointerList.bind(this),
         originalEvent: event
       };
-      createCustomEvent('pointerup', event.target, payload);
+      createCustomEvent('pointerup', event.currentTarget, payload);
     }
   }
 
@@ -381,17 +381,17 @@ window.Modernizr = (function( window, document, undefined ) {
       event.textPointerType = PointerTypes.MOUSE;
     }
     if (event.textPointerType == PointerTypes.MOUSE) {
-        event.target.msMouseDown = true;
+        event.currentTarget.msMouseDown = true;
     }
-    if (!event.target.msPointerList) event.target.msPointerList = {};
-    event.target.msPointerList[event.pointerId] = event;
+    if (!event.currentTarget.msPointerList) event.currentTarget.msPointerList = {};
+    event.currentTarget.msPointerList[event.pointerId] = event;
     var payload = {
       pointerType: event.textPointerType,
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
 
-    createCustomEvent('pointerdown', event.target, payload);
+    createCustomEvent('pointerdown', event.currentTarget, payload);
   }
 
   function pointerMoveHandler(event) {
@@ -402,22 +402,22 @@ window.Modernizr = (function( window, document, undefined ) {
     } else if (event.pointerType == 4) {
       event.textPointerType = PointerTypes.MOUSE;
     }
-    if (event.textPointerType == PointerTypes.MOUSE && !event.target.msMouseDown) {
+    if (event.textPointerType == PointerTypes.MOUSE && !event.currentTarget.msMouseDown) {
       return;
     }
-    if (!event.target.msPointerList) event.target.msPointerList = {};
-    event.target.msPointerList[event.pointerId] = event;
+    if (!event.currentTarget.msPointerList) event.currentTarget.msPointerList = {};
+    event.currentTarget.msPointerList[event.pointerId] = event;
     var payload = {
       pointerType: event.textPointerType,
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointermove', event.target, payload);
+    createCustomEvent('pointermove', event.currentTarget, payload);
   }
 
   function pointerUpHandler(event) {
-    if (event.target.msPointerList) {
-      delete event.target.msPointerList[event.pointerId];
+    if (event.currentTarget.msPointerList) {
+      delete event.currentTarget.msPointerList[event.pointerId];
     }
     if (event.pointerType == 2) {
       event.textPointerType = PointerTypes.TOUCH;
@@ -427,14 +427,14 @@ window.Modernizr = (function( window, document, undefined ) {
       event.textPointerType = PointerTypes.MOUSE;
     }
     if (event.textPointerType == PointerTypes.MOUSE) {
-        event.target.msMouseDown = false;
+        event.currentTarget.msMouseDown = false;
     }
     var payload = {
       pointerType: event.textPointerType,
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointerup', event.target, payload);
+    createCustomEvent('pointerup', event.currentTarget, payload);
   }
 
   /**
@@ -658,7 +658,7 @@ window.Modernizr = (function( window, document, undefined ) {
 
       // Start a timer.
       this.longPressTimer = setTimeout(function() {
-        payload = {};
+        var payload = {};
         window._createCustomEvent('gesturelongpress', e.target, payload);
       }, LONGPRESS_TIME);
 

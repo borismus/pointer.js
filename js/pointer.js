@@ -23,15 +23,15 @@
   };
 
   function setMouse(mouseEvent) {
-    mouseEvent.target.mouseEvent = mouseEvent;
+    mouseEvent.currentTarget.mouseEvent = mouseEvent;
   }
 
   function unsetMouse(mouseEvent) {
-    mouseEvent.target.mouseEvent = null;
+    mouseEvent.currentTarget.mouseEvent = null;
   }
 
   function setTouch(touchEvent) {
-    touchEvent.target.touchList = touchEvent.targetTouches;
+    touchEvent.currentTarget.touchList = touchEvent.targetTouches;
   }
 
   /**
@@ -81,12 +81,12 @@
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointerdown', event.target, payload);
+    createCustomEvent('pointerdown', event.currentTarget, payload);
   }
 
   function mouseMoveHandler(event) {
     event.preventDefault();
-    if (event.target.mouseEvent) {
+    if (event.currentTarget.mouseEvent) {
       setMouse(event);
     }
     var payload = {
@@ -94,7 +94,7 @@
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointermove', event.target, payload);
+    createCustomEvent('pointermove', event.currentTarget, payload);
   }
 
   function mouseUpHandler(event) {
@@ -105,7 +105,7 @@
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointerup', event.target, payload);
+    createCustomEvent('pointerup', event.currentTarget, payload);
   }
 
   /*************** Touch event handlers *****************/
@@ -119,7 +119,7 @@
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointerdown', event.target, payload);
+    createCustomEvent('pointerdown', event.currentTarget, payload);
   }
 
   function touchMoveHandler(event) {
@@ -130,7 +130,7 @@
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointermove', event.target, payload);
+    createCustomEvent('pointermove', event.currentTarget, payload);
   }
 
   function touchEndHandler(event) {
@@ -141,11 +141,11 @@
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointerup', event.target, payload);
+    createCustomEvent('pointerup', event.currentTarget, payload);
   }
 
   function mouseOutHandler(event) {
-    if (event.target.mouseEvent) {
+    if (event.currentTarget.mouseEvent) {
       console.log(event);
       event.preventDefault();
       unsetMouse(event);
@@ -154,7 +154,7 @@
         getPointerList: getPointerList.bind(this),
         originalEvent: event
       };
-      createCustomEvent('pointerup', event.target, payload);
+      createCustomEvent('pointerup', event.currentTarget, payload);
     }
   }
 
@@ -169,17 +169,17 @@
       event.textPointerType = PointerTypes.MOUSE;
     }
     if (event.textPointerType == PointerTypes.MOUSE) {
-        event.target.msMouseDown = true;
+        event.currentTarget.msMouseDown = true;
     }
-    if (!event.target.msPointerList) event.target.msPointerList = {};
-    event.target.msPointerList[event.pointerId] = event;
+    if (!event.currentTarget.msPointerList) event.currentTarget.msPointerList = {};
+    event.currentTarget.msPointerList[event.pointerId] = event;
     var payload = {
       pointerType: event.textPointerType,
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
 
-    createCustomEvent('pointerdown', event.target, payload);
+    createCustomEvent('pointerdown', event.currentTarget, payload);
   }
 
   function pointerMoveHandler(event) {
@@ -190,22 +190,22 @@
     } else if (event.pointerType == 4) {
       event.textPointerType = PointerTypes.MOUSE;
     }
-    if (event.textPointerType == PointerTypes.MOUSE && !event.target.msMouseDown) {
+    if (event.textPointerType == PointerTypes.MOUSE && !event.currentTarget.msMouseDown) {
       return;
     }
-    if (!event.target.msPointerList) event.target.msPointerList = {};
-    event.target.msPointerList[event.pointerId] = event;
+    if (!event.currentTarget.msPointerList) event.currentTarget.msPointerList = {};
+    event.currentTarget.msPointerList[event.pointerId] = event;
     var payload = {
       pointerType: event.textPointerType,
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointermove', event.target, payload);
+    createCustomEvent('pointermove', event.currentTarget, payload);
   }
 
   function pointerUpHandler(event) {
-    if (event.target.msPointerList) {
-      delete event.target.msPointerList[event.pointerId];
+    if (event.currentTarget.msPointerList) {
+      delete event.currentTarget.msPointerList[event.pointerId];
     }
     if (event.pointerType == 2) {
       event.textPointerType = PointerTypes.TOUCH;
@@ -215,14 +215,14 @@
       event.textPointerType = PointerTypes.MOUSE;
     }
     if (event.textPointerType == PointerTypes.MOUSE) {
-        event.target.msMouseDown = false;
+        event.currentTarget.msMouseDown = false;
     }
     var payload = {
       pointerType: event.textPointerType,
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointerup', event.target, payload);
+    createCustomEvent('pointerup', event.currentTarget, payload);
   }
 
   /**

@@ -1,14 +1,15 @@
 window.addEventListener('load', function() {
   example = document.querySelector('#test');
+  child = document.querySelector('#child');
 });
 
-function synthesizeEvent(eventName, extras) {
+function synthesizeEvent(eventName, extras, onChild) {
   var event = document.createEvent('CustomEvent');
   event.initEvent(eventName, true, true);
   for (var k in extras) {
     event[k] = extras[k];
   }
-  example.dispatchEvent(event);
+  (onChild ? child : example).dispatchEvent(event);
 }
 
 function mockGetPointerList() {
@@ -254,3 +255,15 @@ test('longpress should not work if released too early', function() {
   }, 300);
   stop();
 });
+
+test('pointer data should bubble up with events', function () {
+  example.addEventListener('pointerdown', function(e) {
+    start();
+    var list = e.getPointerList()
+    equal(list.length, 1, 'pointer list should contain exactly 1 pointer object');
+    example.removeEventListener('pointerdown', arguments.callee);
+  });
+  stop();
+  // Synthesize a mousedown event on child
+  synthesizeEvent('mousedown', {pageX: 100, pageY: 200}, true);
+})
