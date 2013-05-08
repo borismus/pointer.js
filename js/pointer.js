@@ -111,7 +111,6 @@
   /*************** Touch event handlers *****************/
 
   function touchStartHandler(event) {
-    console.log('touchstart');
     event.preventDefault();
     setTouch(event);
     var payload = {
