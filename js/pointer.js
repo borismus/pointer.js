@@ -144,7 +144,10 @@
   }
 
   function mouseOutHandler(event) {
-    if (event.currentTarget.mouseEvent && !event.currentTarget.contains(event.toElement)) {
+    if (event.currentTarget.mouseEvent &&
+        !event.currentTarget.contains(event.toElement) &&
+        !event.currentTarget.contains(event.fromElement)
+      ) {
       event.preventDefault();
       unsetMouse(event);
       var payload = {
