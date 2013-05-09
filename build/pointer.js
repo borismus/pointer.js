@@ -293,7 +293,7 @@ window.Modernizr = (function( window, document, undefined ) {
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointerdown', event.currentTarget, payload);
+    createCustomEvent('pointerdown', event.target, payload);
   }
 
   function mouseMoveHandler(event) {
@@ -306,7 +306,7 @@ window.Modernizr = (function( window, document, undefined ) {
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointermove', event.currentTarget, payload);
+    createCustomEvent('pointermove', event.target, payload);
   }
 
   function mouseUpHandler(event) {
@@ -317,7 +317,7 @@ window.Modernizr = (function( window, document, undefined ) {
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointerup', event.currentTarget, payload);
+    createCustomEvent('pointerup', event.target, payload);
   }
 
   /*************** Touch event handlers *****************/
@@ -330,7 +330,7 @@ window.Modernizr = (function( window, document, undefined ) {
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointerdown', event.currentTarget, payload);
+    createCustomEvent('pointerdown', event.target, payload);
   }
 
   function touchMoveHandler(event) {
@@ -341,7 +341,7 @@ window.Modernizr = (function( window, document, undefined ) {
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointermove', event.currentTarget, payload);
+    createCustomEvent('pointermove', event.target, payload);
   }
 
   function touchEndHandler(event) {
@@ -352,11 +352,11 @@ window.Modernizr = (function( window, document, undefined ) {
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointerup', event.currentTarget, payload);
+    createCustomEvent('pointerup', event.target, payload);
   }
 
   function mouseOutHandler(event) {
-    if (event.currentTarget.mouseEvent) {
+    if (event.target.mouseEvent) {
       event.preventDefault();
       unsetMouse(event);
       var payload = {
@@ -364,7 +364,7 @@ window.Modernizr = (function( window, document, undefined ) {
         getPointerList: getPointerList.bind(this),
         originalEvent: event
       };
-      createCustomEvent('pointerup', event.currentTarget, payload);
+      createCustomEvent('pointerup', event.target, payload);
     }
   }
 
@@ -379,17 +379,17 @@ window.Modernizr = (function( window, document, undefined ) {
       event.textPointerType = PointerTypes.MOUSE;
     }
     if (event.textPointerType == PointerTypes.MOUSE) {
-        event.currentTarget.msMouseDown = true;
+        event.target.msMouseDown = true;
     }
-    if (!event.currentTarget.msPointerList) event.currentTarget.msPointerList = {};
-    event.currentTarget.msPointerList[event.pointerId] = event;
+    if (!event.target.msPointerList) event.target.msPointerList = {};
+    event.target.msPointerList[event.pointerId] = event;
     var payload = {
       pointerType: event.textPointerType,
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
 
-    createCustomEvent('pointerdown', event.currentTarget, payload);
+    createCustomEvent('pointerdown', event.target, payload);
   }
 
   function pointerMoveHandler(event) {
@@ -400,22 +400,22 @@ window.Modernizr = (function( window, document, undefined ) {
     } else if (event.pointerType == 4) {
       event.textPointerType = PointerTypes.MOUSE;
     }
-    if (event.textPointerType == PointerTypes.MOUSE && !event.currentTarget.msMouseDown) {
+    if (event.textPointerType == PointerTypes.MOUSE && !event.target.msMouseDown) {
       return;
     }
-    if (!event.currentTarget.msPointerList) event.currentTarget.msPointerList = {};
-    event.currentTarget.msPointerList[event.pointerId] = event;
+    if (!event.target.msPointerList) event.target.msPointerList = {};
+    event.target.msPointerList[event.pointerId] = event;
     var payload = {
       pointerType: event.textPointerType,
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointermove', event.currentTarget, payload);
+    createCustomEvent('pointermove', event.target, payload);
   }
 
   function pointerUpHandler(event) {
-    if (event.currentTarget.msPointerList) {
-      delete event.currentTarget.msPointerList[event.pointerId];
+    if (event.target.msPointerList) {
+      delete event.target.msPointerList[event.pointerId];
     }
     if (event.pointerType == 2) {
       event.textPointerType = PointerTypes.TOUCH;
@@ -425,14 +425,14 @@ window.Modernizr = (function( window, document, undefined ) {
       event.textPointerType = PointerTypes.MOUSE;
     }
     if (event.textPointerType == PointerTypes.MOUSE) {
-        event.currentTarget.msMouseDown = false;
+        event.target.msMouseDown = false;
     }
     var payload = {
       pointerType: event.textPointerType,
       getPointerList: getPointerList.bind(this),
       originalEvent: event
     };
-    createCustomEvent('pointerup', event.currentTarget, payload);
+    createCustomEvent('pointerup', event.target, payload);
   }
 
   /**
