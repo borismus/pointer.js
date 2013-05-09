@@ -10,10 +10,10 @@
   function pointerDown(e) {
     var pointers = e.getPointerList();
     if (pointers.length != 1) return;
-    e.target.tapInitPosition = pointers[0]
+    e.target.tapInitPosition = pointers[0];
     e.target.addEventListener('pointerup', pointerUp);
     setTimeout(function () {
-      e.target.removeEventListener('pointerup', pointerUp)
+      e.target.removeEventListener('pointerup', pointerUp);
     }, TAP_TIME);
   }
 
