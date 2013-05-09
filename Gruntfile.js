@@ -23,7 +23,8 @@ module.exports = function( grunt ) {
           'js/gesture.js',
           'js/doubletap.js',
           'js/longpress.js',
-          'js/scale.js'
+          'js/scale.js',
+          'js/tap.js'
         ]
       }
     },
