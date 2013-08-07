@@ -110,6 +110,13 @@ as part of the event payload through `evt.scale`.
 [paul]: http://paulirish.com/demo/multi
 
 
+## Support
+
+If you're having problems with using the project, use the support forum at CodersClan.
+
+<a href="http://codersclan.net/forum/index.php?repo_id=27"><img src="http://www.codersclan.net/graphics/getSupport_blue_big.png" width="160"></a>
+
+
 # Open questions
 
 - Will the way addEventListener is overridden cause problems in the
