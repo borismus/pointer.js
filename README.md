@@ -1,8 +1,18 @@
-Unified touch/mouse/pen handling with gesture support
-=====================================================
+An early pointer events polyfill
+================================
 
 For background and motivation, see this blog post:
 <http://smus.com/mouse-touch-pointer/>.
+
+# Important note (August 7, 2013)
+
+This project is deprecated.
+
+For your future pointer event needs, please use this [PointerEvents
+polyfill][new-polyfill], part of the [Polymer Project][polymer].
+
+[new-polyfill]: https://github.com/Polymer/PointerEvents
+[polymer]: http://www.polymer-project.org/
 
 # Implementation
 
