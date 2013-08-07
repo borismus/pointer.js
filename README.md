@@ -1,9 +1,3 @@
-An early pointer events polyfill
-================================
-
-For background and motivation, see this blog post:
-<http://smus.com/mouse-touch-pointer/>.
-
 # Important note (August 7, 2013)
 
 This project is deprecated.
@@ -13,6 +7,11 @@ polyfill][new-polyfill], part of the [Polymer Project][polymer].
 
 [new-polyfill]: https://github.com/Polymer/PointerEvents
 [polymer]: http://www.polymer-project.org/
+
+# An early pointer events polyfill
+
+For background and motivation, see this blog post:
+<http://smus.com/mouse-touch-pointer/>.
 
 # Implementation
 
@@ -109,12 +108,6 @@ as part of the event payload through `evt.scale`.
 [seb]: http://seb.ly/2011/04/multi-touch-game-controller-in-javascripthtml5-for-ipad/
 [paul]: http://paulirish.com/demo/multi
 
-
-## Support
-
-If you're having problems with using the project, use the support forum at CodersClan.
-
-<a href="http://codersclan.net/forum/index.php?repo_id=27"><img src="http://www.codersclan.net/graphics/getSupport_blue_big.png" width="160"></a>
 
 
 # Open questions
