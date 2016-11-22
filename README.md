@@ -125,3 +125,20 @@ as part of the event payload through `evt.scale`.
 [jsperf]: http://jsperf.com/events-vs-functions/3
 [demos]: http://borismus.github.com/pointer.js/demos/draw.html
 [doubletap]: https://github.com/borismus/pointer.js/blob/master/js/doubletap.js
+
+## Development Environment
+
+If you have installed Grunt globally in the past, you will need to remove it first:
+```shell
+npm uninstall -g grunt
+```
+
+In order to get started, you'll want to install Grunt's command line interface (CLI) globally. You may need to use sudo (for OSX, *nix, BSD etc) or run your command shell as Administrator (for Windows) to do this.
+```shell
+npm install -g grunt-cli
+```
+
+Install project dependencies with
+```shell
+npm install
+```

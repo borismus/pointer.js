@@ -1,0 +1,11 @@
+{
+  "name": "pointer.js",
+  "devDependencies": {
+    "grunt": ">=0.4.1",
+    "grunt-contrib-concat": "*",
+    "grunt-contrib-jshint": "*",
+    "grunt-contrib-uglify": "*",
+    "grunt-contrib-nodeunit": "*",
+    "grunt-contrib-jshint": "*"
+  }
+}
