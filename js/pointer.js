@@ -23,15 +23,15 @@
   };
 
   function setMouse(mouseEvent) {
-    mouseEvent.target.mouseEvent = mouseEvent;
+    mouseEvent.currentTarget.mouseEvent = mouseEvent;
   }
 
   function unsetMouse(mouseEvent) {
-    mouseEvent.target.mouseEvent = null;
+    mouseEvent.currentTarget.mouseEvent = null;
   }
 
   function setTouch(touchEvent) {
-    touchEvent.target.touchList = touchEvent.targetTouches;
+    touchEvent.currentTarget.touchList = touchEvent.targetTouches;
   }
 
   /**
@@ -86,7 +86,7 @@
 
   function mouseMoveHandler(event) {
     event.preventDefault();
-    if (event.target.mouseEvent) {
+    if (event.currentTarget.mouseEvent) {
       setMouse(event);
     }
     var payload = {
@@ -111,7 +111,6 @@
   /*************** Touch event handlers *****************/
 
   function touchStartHandler(event) {
-    console.log('touchstart');
     event.preventDefault();
     setTouch(event);
     var payload = {
@@ -145,8 +144,10 @@
   }
 
   function mouseOutHandler(event) {
-    if (event.target.mouseEvent) {
-      console.log(event);
+    if (event.currentTarget.mouseEvent &&
+        !event.currentTarget.contains(event.toElement) &&
+        !event.currentTarget.contains(event.fromElement)
+      ) {
       event.preventDefault();
       unsetMouse(event);
       var payload = {

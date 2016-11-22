@@ -28,16 +28,19 @@
   function pointerDown(e) {
     var pointers = e.getPointerList();
     if (pointers.length != 1) return;
-    var now = new Date();
+    var now = new Date().getTime();
     if (now - this.lastDownTime < DOUBLETAP_TIME && this.lastPosition && this.lastPosition.calculateSquaredDistance(pointers[0]) < WIGGLE_THRESHOLD * WIGGLE_THRESHOLD) {
       this.lastDownTime = 0;
       this.lastPosition = null;
       var payload = {
+        pageX: pointers[0].pageX,
+        pageY: pointers[0].pageY
       };
       window._createCustomEvent('gesturedoubletap', e.target, payload);
+    } else {
+      this.lastPosition = new PointerPosition(pointers[0]);
+      this.lastDownTime = now;
     }
-    this.lastPosition = new PointerPosition(pointers[0]);
-    this.lastDownTime = now;
   }
 
   /**
